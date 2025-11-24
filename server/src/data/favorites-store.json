@@ -1,21 +1,8 @@
 {
   "clients": {
     "6ad3aa51-e3f2-4e1c-b0fb-fc76a281d46d": {
-      "favorites": [
-        {
-          "type": "layout",
-          "id": "loft-bed-stairs-desk"
-        },
-        {
-          "type": "layout",
-          "id": "sofa-bed-fold-table"
-        },
-        {
-          "type": "layout",
-          "id": "raised-platform-storage"
-        }
-      ],
-      "updatedAt": "2025-11-24T10:41:21.398Z"
+      "favorites": [],
+      "updatedAt": "2025-11-24T12:03:49.731Z"
     }
   }
 }

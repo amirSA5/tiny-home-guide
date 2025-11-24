@@ -1,6 +1,17 @@
 // src/pages/RecommendationsPage.jsx
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  Divider,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useSpace } from "../context/SpaceContext.jsx";
 import { furnitureItems } from "../data/furnitureItems.js";
 import { layoutPatterns } from "../data/layoutPatterns.js";
@@ -105,16 +116,18 @@ function RecommendationsPage() {
 
   if (!spaceProfile) {
     return (
-      <div>
-        <h2>Recommendations</h2>
-        <p>
+      <Box>
+        <Typography variant="h5" gutterBottom>
+          Recommendations
+        </Typography>
+        <Typography gutterBottom>
           We need some info about your tiny home before we can suggest layouts
           and furniture.
-        </p>
-        <Link to="/space">
+        </Typography>
+        <Button variant="contained" component={RouterLink} to="/space">
           Create your space profile {"->"}
-        </Link>
-      </div>
+        </Button>
+      </Box>
     );
   }
 
@@ -124,104 +137,136 @@ function RecommendationsPage() {
   const readableType = spaceProfile.type.replace("_", " ");
 
   return (
-    <div>
-      <h2>Recommendations</h2>
-      <p>
-        Here are ideas tailored to your {readableType} of approx.{" "}
-        {spaceProfile.length}m x {spaceProfile.width}m.
-      </p>
+    <Stack spacing={3}>
+      <Box>
+        <Typography variant="h5" gutterBottom>
+          Recommendations
+        </Typography>
+        <Typography>
+          Here are ideas tailored to your {readableType} of approx. {spaceProfile.length}m x{" "}
+          {spaceProfile.width}m.
+        </Typography>
+      </Box>
 
-      {loading && <p>Loading fresh recommendations...</p>}
+      {loading && (
+        <Stack direction="row" spacing={1} alignItems="center">
+          <CircularProgress size={18} />
+          <Typography>Loading fresh recommendations...</Typography>
+        </Stack>
+      )}
       {error && (
-        <p style={{ color: "tomato" }}>
+        <Alert severity="warning">
           {error} {usedFallback && "(offline fallback)"}
-        </p>
+        </Alert>
       )}
 
-      <section style={{ marginTop: 24 }}>
-        <h3>Layout ideas</h3>
+      <Box>
+        <Typography variant="h6" gutterBottom>
+          Layout ideas
+        </Typography>
         {layouts.length === 0 ? (
-          <p>
-            No specific layout patterns matched yet, but you can still explore
-            furniture ideas below.
-          </p>
+          <Typography color="text.secondary">
+            No specific layout patterns matched yet, but you can still explore furniture ideas
+            below.
+          </Typography>
         ) : (
-          <ul style={{ paddingLeft: 18 }}>
+          <Stack spacing={2}>
             {layouts.map((lp) => {
               const fav = isFavorite("layout", lp.id);
               return (
-                <li key={lp.id} style={{ marginBottom: 12 }}>
-                  <strong>{lp.title}</strong>
-                  <p style={{ margin: "4px 0" }}>{lp.description}</p>
-                  <button
-                    type="button"
-                    onClick={() => toggleFavorite("layout", lp.id)}
-                    style={{ fontSize: "0.9em" }}
-                  >
-                    {fav ? "[x] Remove from favorites" : "[+] Save to favorites"}
-                  </button>
-                </li>
+                <Card key={lp.id} variant="outlined">
+                  <CardContent>
+                    <Typography variant="subtitle1" fontWeight={600}>
+                      {lp.title}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ my: 1 }}>
+                      {lp.description}
+                    </Typography>
+                    <Button
+                      size="small"
+                      variant={fav ? "contained" : "outlined"}
+                      onClick={() => toggleFavorite("layout", lp.id)}
+                    >
+                      {fav ? "Remove from favorites" : "Save to favorites"}
+                    </Button>
+                  </CardContent>
+                </Card>
               );
             })}
-          </ul>
+          </Stack>
         )}
-      </section>
+      </Box>
 
-      <section style={{ marginTop: 24 }}>
-        <h3>Multifunctional furniture</h3>
+      <Divider />
+
+      <Box>
+        <Typography variant="h6" gutterBottom>
+          Multifunctional furniture
+        </Typography>
         {furniture.length === 0 ? (
-          <p>No furniture suggestions yet.</p>
+          <Typography color="text.secondary">No furniture suggestions yet.</Typography>
         ) : (
-          <ul style={{ paddingLeft: 18 }}>
+          <Stack spacing={2}>
             {furniture.map((item) => {
               const fav = isFavorite("furniture", item.id);
               return (
-                <li key={item.id} style={{ marginBottom: 12 }}>
-                  <strong>{item.name}</strong>
-                  <p style={{ margin: "2px 0" }}>{item.bestLocation}</p>
-                  {item.footprint && (
-                    <p style={{ margin: "2px 0", fontSize: "0.9em" }}>
-                      Approx. footprint:{" "}
-                      {item.footprint.width &&
-                        `width ~${item.footprint.width}cm `}
-                      {item.footprint.openDepth &&
-                        `- depth in use ~${item.footprint.openDepth}cm `}
-                      {item.footprint.foldedDepth &&
-                        `- depth folded ~${item.footprint.foldedDepth}cm`}
-                    </p>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => toggleFavorite("furniture", item.id)}
-                    style={{ fontSize: "0.9em", marginTop: 4 }}
-                  >
-                    {fav ? "[x] Remove from favorites" : "[+] Save to favorites"}
-                  </button>
-                </li>
+                <Card key={item.id} variant="outlined">
+                  <CardContent>
+                    <Typography variant="subtitle1" fontWeight={600}>
+                      {item.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {item.bestLocation}
+                    </Typography>
+                    {item.footprint && (
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                        Approx. footprint:{" "}
+                        {item.footprint.width && `width ~${item.footprint.width}cm `}{" "}
+                        {item.footprint.openDepth &&
+                          `- depth in use ~${item.footprint.openDepth}cm `}{" "}
+                        {item.footprint.foldedDepth &&
+                          `- depth folded ~${item.footprint.foldedDepth}cm`}
+                      </Typography>
+                    )}
+                    <Button
+                      size="small"
+                      variant={fav ? "contained" : "outlined"}
+                      sx={{ mt: 1 }}
+                      onClick={() => toggleFavorite("furniture", item.id)}
+                    >
+                      {fav ? "Remove from favorites" : "Save to favorites"}
+                    </Button>
+                  </CardContent>
+                </Card>
               );
             })}
-          </ul>
+          </Stack>
         )}
-      </section>
+      </Box>
 
-      <section style={{ marginTop: 24 }}>
-        <h3>Design tips for tiny homes</h3>
-        <ul style={{ paddingLeft: 18 }}>
+      <Divider />
+
+      <Box>
+        <Typography variant="h6" gutterBottom>
+          Design tips for tiny homes
+        </Typography>
+        <Stack spacing={1}>
           {tips.map((tip) => (
-            <li key={tip.id} style={{ marginBottom: 8 }}>
-              {tip.text}
-            </li>
+            <Card key={tip.id} variant="outlined">
+              <CardContent>
+                <Typography variant="body2">{tip.text}</Typography>
+              </CardContent>
+            </Card>
           ))}
-        </ul>
-      </section>
+        </Stack>
+      </Box>
 
-      <div style={{ marginTop: 24 }}>
-        <Link to="/favorites">
+      <Box>
+        <Button variant="contained" component={RouterLink} to="/favorites">
           View your favorites {"->"}
-        </Link>
-      </div>
-    </div>
+        </Button>
+      </Box>
+    </Stack>
   );
 }
 

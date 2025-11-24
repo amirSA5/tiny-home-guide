@@ -36,3 +36,28 @@ export async function saveFavorites(clientId, favorites) {
 export function getApiBase() {
   return API_BASE;
 }
+
+export async function login({ email, password }) {
+  const res = await fetch(`${API_BASE}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  return handleResponse(res);
+}
+
+export async function signup({ email, password, role, adminInviteCode }) {
+  const res = await fetch(`${API_BASE}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password, role, adminInviteCode }),
+  });
+  return handleResponse(res);
+}
+
+export async function fetchMe(token) {
+  const res = await fetch(`${API_BASE}/auth/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return handleResponse(res);
+}

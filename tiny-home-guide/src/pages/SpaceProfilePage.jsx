@@ -1,6 +1,24 @@
 // src/pages/SpaceProfilePage.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  Alert,
+  Box,
+  Button,
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  FormGroup,
+  FormLabel,
+  MenuItem,
+  Paper,
+  Radio,
+  RadioGroup,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useSpace } from "../context/SpaceContext.jsx";
 
 function SpaceProfilePage() {
@@ -11,9 +29,8 @@ function SpaceProfilePage() {
   const [width, setWidth] = useState(spaceProfile?.width || "");
   const [type, setType] = useState(spaceProfile?.type || "");
   const [occupants, setOccupants] = useState(spaceProfile?.occupants || "solo");
-  const [zones, setZones] = useState(
-    spaceProfile?.zones || ["sleep", "work"] // some default zones
-  );
+  const [zones, setZones] = useState(spaceProfile?.zones || ["sleep", "work"]);
+  const [formError, setFormError] = useState("");
 
   const allZones = [
     { id: "sleep", label: "Sleep area" },
@@ -34,9 +51,10 @@ function SpaceProfilePage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!length || !width || !type) {
-      alert("Please fill length, width, and type.");
+      setFormError("Please fill length, width, and type.");
       return;
     }
+    setFormError("");
 
     const profile = {
       length: Number(length),
@@ -51,114 +69,99 @@ function SpaceProfilePage() {
   };
 
   return (
-    <div>
-      <h2>Space Profile</h2>
-      <p>Describe your tiny home so we can suggest layouts and furniture.</p>
+    <Box display="flex" justifyContent="center">
+      <Paper elevation={3} sx={{ p: 4, width: "100%", maxWidth: 720 }}>
+        <Typography variant="h5" gutterBottom>
+          Space Profile
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Describe your tiny home so we can suggest layouts and furniture.
+        </Typography>
+        {formError && (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {formError}
+          </Alert>
+        )}
 
-      <form
-        onSubmit={handleSubmit}
-        style={{ display: "grid", gap: "12px", maxWidth: 400 }}
-      >
-        <div>
-          <label>
-            Length (m):
-            <input
+        <Stack component="form" spacing={3} onSubmit={handleSubmit}>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <TextField
+              label="Length (m)"
               type="number"
-              step="0.1"
+              inputProps={{ step: 0.1 }}
               value={length}
               onChange={(e) => setLength(e.target.value)}
-              placeholder="e.g. 6"
-              style={{ marginLeft: 8 }}
+              required
+              fullWidth
             />
-          </label>
-        </div>
-
-        <div>
-          <label>
-            Width (m):
-            <input
+            <TextField
+              label="Width (m)"
               type="number"
-              step="0.1"
+              inputProps={{ step: 0.1 }}
               value={width}
               onChange={(e) => setWidth(e.target.value)}
-              placeholder="e.g. 3"
-              style={{ marginLeft: 8 }}
+              required
+              fullWidth
             />
-          </label>
-        </div>
+          </Stack>
 
-        <div>
-          <label>
-            Type of space:
-            <select
+          <FormControl fullWidth>
+            <FormLabel>Type of space</FormLabel>
+            <Select
               value={type}
               onChange={(e) => setType(e.target.value)}
-              style={{ marginLeft: 8 }}
+              displayEmpty
+              required
             >
-              <option value="" disabled>
+              <MenuItem value="" disabled>
                 Select type
-              </option>
-              <option value="tiny_house">Tiny house</option>
-              <option value="cabin">Cabin</option>
-              <option value="van">Van</option>
-              <option value="studio">Studio</option>
-            </select>
-          </label>
-        </div>
+              </MenuItem>
+              <MenuItem value="tiny_house">Tiny house</MenuItem>
+              <MenuItem value="cabin">Cabin</MenuItem>
+              <MenuItem value="van">Van</MenuItem>
+              <MenuItem value="studio">Studio</MenuItem>
+            </Select>
+          </FormControl>
 
-        <div>
-          <span>Occupants: </span>
-          <label style={{ marginLeft: 8 }}>
-            <input
-              type="radio"
-              name="occupants"
-              value="solo"
-              checked={occupants === "solo"}
+          <FormControl component="fieldset">
+            <FormLabel>Occupants</FormLabel>
+            <RadioGroup
+              row
+              value={occupants}
               onChange={(e) => setOccupants(e.target.value)}
-            />
-            Solo
-          </label>
-          <label style={{ marginLeft: 8 }}>
-            <input
-              type="radio"
-              name="occupants"
-              value="couple"
-              checked={occupants === "couple"}
-              onChange={(e) => setOccupants(e.target.value)}
-            />
-            Couple
-          </label>
-          <label style={{ marginLeft: 8 }}>
-            <input
-              type="radio"
-              name="occupants"
-              value="family"
-              checked={occupants === "family"}
-              onChange={(e) => setOccupants(e.target.value)}
-            />
-            Family
-          </label>
-        </div>
+            >
+              <FormControlLabel value="solo" control={<Radio />} label="Solo" />
+              <FormControlLabel value="couple" control={<Radio />} label="Couple" />
+              <FormControlLabel value="family" control={<Radio />} label="Family" />
+            </RadioGroup>
+          </FormControl>
 
-        <div>
-          <p>What zones do you need?</p>
-          {allZones.map((z) => (
-            <label key={z.id} style={{ display: "block" }}>
-              <input
-                type="checkbox"
-                checked={zones.includes(z.id)}
-                onChange={() => handleZoneToggle(z.id)}
-              />
-              <span style={{ marginLeft: 4 }}>{z.label}</span>
-            </label>
-          ))}
-        </div>
+          <FormControl component="fieldset">
+            <FormLabel>What zones do you need?</FormLabel>
+            <FormGroup>
+              {allZones.map((z) => (
+                <FormControlLabel
+                  key={z.id}
+                  control={
+                    <Checkbox
+                      checked={zones.includes(z.id)}
+                      onChange={() => handleZoneToggle(z.id)}
+                    />
+                  }
+                  label={z.label}
+                />
+              ))}
+            </FormGroup>
+          </FormControl>
 
-        <button type="submit">
-          Generate ideas {"->"}
-        </button>
-      </form>
-    </div>
+          <Box>
+            <Button type="submit" variant="contained" color="primary">
+              Generate ideas {"->"}
+            </Button>
+          </Box>
+        </Stack>
+      </Paper>
+    </Box>
   );
 }
 

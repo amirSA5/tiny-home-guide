@@ -22,3 +22,15 @@ export const favoritesSchema = z.object({
     )
     .max(200),
 });
+
+export const registerSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6).max(100),
+  role: z.enum(["user", "admin"]).optional(),
+  adminInviteCode: z.string().optional(),
+});
+
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});

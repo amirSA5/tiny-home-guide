@@ -1,5 +1,14 @@
 // src/pages/FavoritesPage.jsx
-import { Link } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useSpace } from "../context/SpaceContext.jsx";
 import { layoutPatterns } from "../data/layoutPatterns.js";
 import { furnitureItems } from "../data/furnitureItems.js";
@@ -15,14 +24,15 @@ function FavoritesPage() {
 
   if (!favorites || favorites.length === 0) {
     return (
-      <div>
-        <h2>Favorites</h2>
-        <p>You don't have any favorites yet.</p>
-        <p>
-          Go to <Link to="/recommendations">Recommendations</Link> and save the
-          layouts or furniture ideas you like.
-        </p>
-      </div>
+      <Box>
+        <Typography variant="h5" gutterBottom>
+          Favorites
+        </Typography>
+        <Typography gutterBottom>You don't have any favorites yet.</Typography>
+        <Button variant="contained" component={RouterLink} to="/recommendations">
+          Go to recommendations
+        </Button>
+      </Box>
     );
   }
 
@@ -37,47 +47,65 @@ function FavoritesPage() {
     .filter(Boolean);
 
   return (
-    <div>
-      <h2>Favorites</h2>
-      {syncMessage && (
-        <p style={{ color: favoritesSyncError ? "tomato" : "gray" }}>
-          {syncMessage}
-        </p>
-      )}
-      <p>Here are the layout and furniture ideas you've saved.</p>
+    <Stack spacing={3}>
+      <Box>
+        <Typography variant="h5" gutterBottom>
+          Favorites
+        </Typography>
+        {syncMessage && (
+          <Alert severity={favoritesSyncError ? "error" : "info"} sx={{ mb: 2 }}>
+            {syncMessage}
+          </Alert>
+        )}
+        <Typography>
+          Here are the layout and furniture ideas you've saved.
+        </Typography>
+      </Box>
 
-      <section style={{ marginTop: 24 }}>
-        <h3>Layout favorites</h3>
+      <Box>
+        <Typography variant="h6" gutterBottom>
+          Layout favorites
+        </Typography>
         {layoutFavorites.length === 0 ? (
-          <p>No layout ideas saved yet.</p>
+          <Typography color="text.secondary">No layout ideas saved yet.</Typography>
         ) : (
-          <ul style={{ paddingLeft: 18 }}>
+          <Stack spacing={2}>
             {layoutFavorites.map((lp) => (
-              <li key={lp.id} style={{ marginBottom: 12 }}>
-                <strong>{lp.title}</strong>
-                <p style={{ margin: "4px 0" }}>{lp.description}</p>
-              </li>
+              <Card key={lp.id} variant="outlined">
+                <CardContent>
+                  <Typography fontWeight={600}>{lp.title}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {lp.description}
+                  </Typography>
+                </CardContent>
+              </Card>
             ))}
-          </ul>
+          </Stack>
         )}
-      </section>
+      </Box>
 
-      <section style={{ marginTop: 24 }}>
-        <h3>Furniture favorites</h3>
+      <Box>
+        <Typography variant="h6" gutterBottom>
+          Furniture favorites
+        </Typography>
         {furnitureFavorites.length === 0 ? (
-          <p>No furniture ideas saved yet.</p>
+          <Typography color="text.secondary">No furniture ideas saved yet.</Typography>
         ) : (
-          <ul style={{ paddingLeft: 18 }}>
+          <Stack spacing={2}>
             {furnitureFavorites.map((item) => (
-              <li key={item.id} style={{ marginBottom: 12 }}>
-                <strong>{item.name}</strong>
-                <p style={{ margin: "2px 0" }}>{item.bestLocation}</p>
-              </li>
+              <Card key={item.id} variant="outlined">
+                <CardContent>
+                  <Typography fontWeight={600}>{item.name}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {item.bestLocation}
+                  </Typography>
+                </CardContent>
+              </Card>
             ))}
-          </ul>
+          </Stack>
         )}
-      </section>
-    </div>
+      </Box>
+    </Stack>
   );
 }
 
