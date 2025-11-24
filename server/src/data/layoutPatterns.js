@@ -8,8 +8,10 @@ export const layoutPatterns = [
       type: ["tiny_house", "cabin", "studio"],
       zones: ["sleep", "work", "storage"],
       occupants: ["solo", "couple"],
+      minHeight: 2.9,
     },
     minArea: 12, // m^2
+    requiresLoft: true,
   },
   {
     id: "sofa-bed-fold-table",
@@ -46,5 +48,61 @@ export const layoutPatterns = [
       occupants: ["family"],
     },
     minArea: 13,
+  },
+  {
+    id: "galley-kitchen-mobile",
+    title: "Galley kitchen + wet bath core",
+    description:
+      "Keep plumbing on one wall with a galley kitchen and compact wet bath across; ideal for mobile tiny homes.",
+    recommendedFor: {
+      type: ["tiny_house", "van"],
+      zones: ["kitchen", "dining", "work"],
+      occupants: ["solo", "couple"],
+      mobility: ["mobile"],
+    },
+    minArea: 9,
+  },
+  {
+    id: "loft-over-entry",
+    title: "Loft above entry with lounge below",
+    description:
+      "Place the loft bed above the entry or bath volume to free the main area for seating and dining.",
+    recommendedFor: {
+      type: ["tiny_house", "cabin", "studio"],
+      zones: ["sleep", "dining", "storage"],
+      occupants: ["solo", "couple"],
+      minHeight: 3,
+      mobility: ["mobile", "fixed"],
+    },
+    minArea: 10,
+    requiresLoft: true,
+  },
+  {
+    id: "u-kitchen-fixed",
+    title: "U-shaped kitchen + pocket door",
+    description:
+      "For fixed cabins and studios, use a compact U-kitchen with a pocket door to the bath; keep dining/work opposite.",
+    recommendedFor: {
+      type: ["cabin", "studio"],
+      zones: ["kitchen", "dining", "work"],
+      occupants: ["couple", "family"],
+      mobility: ["fixed"],
+      minHeight: 2.5,
+    },
+    minArea: 14,
+  },
+  {
+    id: "loft-over-desk-split",
+    title: "Loft bed over workspace + sliding partition",
+    description:
+      "Use a loft bed over a desk and add a light sliding panel to separate work from sleep without losing light.",
+    recommendedFor: {
+      type: ["tiny_house", "cabin", "studio"],
+      zones: ["sleep", "work"],
+      occupants: ["solo", "couple"],
+      minHeight: 3,
+    },
+    requiresLoft: true,
+    minArea: 9,
   },
 ];

@@ -16,32 +16,49 @@ import { useSpace } from "../context/SpaceContext.jsx";
 import { furnitureItems } from "../data/furnitureItems.js";
 import { layoutPatterns } from "../data/layoutPatterns.js";
 import { designTips } from "../data/designTips.js";
+import { zoneArrangements } from "../data/zoneArrangements.js";
 import { fetchRecommendations } from "../services/api.js";
+
+function matchesMobility(allowed, profileMobility) {
+  if (!allowed || allowed.length === 0) return true;
+  if (!profileMobility) return true;
+  return allowed.includes(profileMobility);
+}
+
+function meetsHeight(minHeight, profileHeight) {
+  if (!minHeight) return true;
+  if (!profileHeight) return true;
+  return Number(profileHeight) >= minHeight;
+}
 
 function filterLayouts(spaceProfile) {
   if (!spaceProfile) return [];
 
   const area = spaceProfile.length * spaceProfile.width;
+  const profileMobility = spaceProfile.mobility;
+  const profileHeight = spaceProfile.height;
 
   return layoutPatterns.filter((lp) => {
+    const rec = lp.recommendedFor || {};
+
     if (lp.minArea && lp.minArea > area) return false;
+    if (rec.minHeight && !meetsHeight(rec.minHeight, profileHeight)) return false;
+    if (lp.requiresLoft && !spaceProfile.loft) return false;
 
-    if (
-      lp.recommendedFor?.type &&
-      !lp.recommendedFor.type.includes(spaceProfile.type)
-    ) {
+    if (rec.type && !rec.type.includes(spaceProfile.type)) {
       return false;
     }
 
-    if (
-      lp.recommendedFor?.occupants &&
-      !lp.recommendedFor.occupants.includes(spaceProfile.occupants)
-    ) {
+    if (rec.occupants && !rec.occupants.includes(spaceProfile.occupants)) {
       return false;
     }
 
-    if (lp.recommendedFor?.zones) {
-      const hasCommonZone = lp.recommendedFor.zones.some((z) =>
+    if (rec.mobility && !matchesMobility(rec.mobility, profileMobility)) {
+      return false;
+    }
+
+    if (rec.zones) {
+      const hasCommonZone = rec.zones.some((z) =>
         spaceProfile.zones.includes(z)
       );
       if (!hasCommonZone) return false;
@@ -60,12 +77,39 @@ function filterFurniture(spaceProfile) {
   });
 }
 
+function filterArrangements(spaceProfile) {
+  if (!spaceProfile) return [];
+
+  const profileMobility = spaceProfile.mobility;
+  const profileHeight = spaceProfile.height;
+
+  return zoneArrangements.filter((idea) => {
+    const criteria = idea.criteria || {};
+
+    if (criteria.requiresLoft && !spaceProfile.loft) return false;
+    if (criteria.minHeight && !meetsHeight(criteria.minHeight, profileHeight)) {
+      return false;
+    }
+    if (criteria.mobility && !matchesMobility(criteria.mobility, profileMobility)) {
+      return false;
+    }
+    if (criteria.zones) {
+      const hasCommon = criteria.zones.some((z) =>
+        spaceProfile.zones.includes(z)
+      );
+      if (!hasCommon) return false;
+    }
+    return true;
+  });
+}
+
 function RecommendationsPage() {
   const { spaceProfile, toggleFavorite, isFavorite } = useSpace();
   const [recommendations, setRecommendations] = useState({
     layouts: [],
     furniture: [],
     designTips,
+    arrangementIdeas: [],
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -85,6 +129,7 @@ function RecommendationsPage() {
             layouts: data.layouts || [],
             furniture: data.furniture || [],
             designTips: data.designTips || designTips,
+            arrangementIdeas: data.arrangementIdeas || [],
           });
           setUsedFallback(false);
         }
@@ -94,6 +139,7 @@ function RecommendationsPage() {
             layouts: filterLayouts(spaceProfile),
             furniture: filterFurniture(spaceProfile),
             designTips,
+            arrangementIdeas: filterArrangements(spaceProfile),
           });
           setUsedFallback(true);
           setError(
@@ -134,6 +180,7 @@ function RecommendationsPage() {
   const layouts = recommendations.layouts || [];
   const furniture = recommendations.furniture || [];
   const tips = recommendations.designTips || [];
+  const arrangements = recommendations.arrangementIdeas || [];
   const readableType = spaceProfile.type.replace("_", " ");
 
   return (
@@ -143,8 +190,9 @@ function RecommendationsPage() {
           Recommendations
         </Typography>
         <Typography>
-          Here are ideas tailored to your {readableType} of approx. {spaceProfile.length}m x{" "}
-          {spaceProfile.width}m.
+          Ideas tailored to your {readableType} (~{spaceProfile.length}m x{" "}
+          {spaceProfile.width}m, height ~{spaceProfile.height || "?"}m,{" "}
+          {spaceProfile.mobility === "mobile" ? "mobile" : "fixed"}).
         </Typography>
       </Box>
 
@@ -159,6 +207,34 @@ function RecommendationsPage() {
           {error} {usedFallback && "(offline fallback)"}
         </Alert>
       )}
+
+      <Box>
+        <Typography variant="h6" gutterBottom>
+          Zone arrangement ideas
+        </Typography>
+        {arrangements.length === 0 ? (
+          <Typography color="text.secondary">
+            Add more zones or enable a loft to unlock tailored arrangement ideas.
+          </Typography>
+        ) : (
+          <Stack spacing={2}>
+            {arrangements.map((idea) => (
+              <Card key={idea.id} variant="outlined">
+                <CardContent>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    {idea.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {idea.detail}
+                  </Typography>
+                </CardContent>
+              </Card>
+            ))}
+          </Stack>
+        )}
+      </Box>
+
+      <Divider />
 
       <Box>
         <Typography variant="h6" gutterBottom>

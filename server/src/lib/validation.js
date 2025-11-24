@@ -1,15 +1,19 @@
 import { z } from "zod";
 
 export const allowedTypes = ["tiny_house", "cabin", "van", "studio"];
-export const allowedZones = ["sleep", "work", "dining", "pet", "storage"];
+export const allowedZones = ["sleep", "work", "dining", "kitchen", "pet", "storage"];
 export const allowedOccupants = ["solo", "couple", "family"];
+export const allowedMobility = ["mobile", "fixed"];
 
 export const profileSchema = z.object({
   length: z.coerce.number().positive().max(100),
   width: z.coerce.number().positive().max(100),
+  height: z.coerce.number().positive().max(10),
   type: z.enum(allowedTypes),
   occupants: z.enum(allowedOccupants),
   zones: z.array(z.enum(allowedZones)).min(1),
+  mobility: z.enum(allowedMobility).optional(),
+  loft: z.boolean().optional(),
 });
 
 export const favoritesSchema = z.object({

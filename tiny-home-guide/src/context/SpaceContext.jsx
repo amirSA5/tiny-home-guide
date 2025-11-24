@@ -21,10 +21,26 @@ function generateClientId() {
 
 export function SpaceProvider({ children }) {
   // --- INIT FROM LOCALSTORAGE ---
-  const [spaceProfile, setSpaceProfile] = useState(() => {
+  const normalizeProfile = (profile) => {
+    if (!profile) return null;
+    const next = { ...profile };
+    if (!next.height) {
+      next.height = 2.7; // sensible ceiling height default
+    }
+    if (!next.mobility) {
+      next.mobility = "mobile";
+    }
+    if (!Array.isArray(next.zones) || next.zones.length === 0) {
+      next.zones = ["sleep", "work", "kitchen"];
+    }
+    return next;
+  };
+
+  const [spaceProfile, setSpaceProfileState] = useState(() => {
     try {
       const stored = localStorage.getItem(SPACE_PROFILE_KEY);
-      return stored ? JSON.parse(stored) : null;
+      const parsed = stored ? JSON.parse(stored) : null;
+      return normalizeProfile(parsed);
     } catch (e) {
       console.warn("Failed to parse spaceProfile from localStorage", e);
       return null;
@@ -167,9 +183,13 @@ export function SpaceProvider({ children }) {
     return favorites.some((f) => f.type === type && f.id === id);
   };
 
+  const updateSpaceProfile = (profile) => {
+    setSpaceProfileState(normalizeProfile(profile));
+  };
+
   const value = {
     spaceProfile,
-    setSpaceProfile,
+    setSpaceProfile: updateSpaceProfile,
     clientId,
     favorites,
     toggleFavorite,

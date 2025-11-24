@@ -17,6 +17,7 @@ import {
   Select,
   Stack,
   TextField,
+  Switch,
   Typography,
 } from "@mui/material";
 import { useSpace } from "../context/SpaceContext.jsx";
@@ -29,15 +30,21 @@ function SpaceProfilePage() {
 
   const [length, setLength] = useState(spaceProfile?.length || "");
   const [width, setWidth] = useState(spaceProfile?.width || "");
+  const [height, setHeight] = useState(spaceProfile?.height || "");
   const [type, setType] = useState(spaceProfile?.type || "");
   const [occupants, setOccupants] = useState(spaceProfile?.occupants || "solo");
-  const [zones, setZones] = useState(spaceProfile?.zones || ["sleep", "work"]);
+  const [zones, setZones] = useState(
+    spaceProfile?.zones || ["sleep", "work", "kitchen"]
+  );
+  const [mobility, setMobility] = useState(spaceProfile?.mobility || "mobile");
+  const [loft, setLoft] = useState(Boolean(spaceProfile?.loft));
   const [formError, setFormError] = useState("");
 
   const allZones = [
     { id: "sleep", label: "Sleep area" },
     { id: "work", label: "Work / desk" },
     { id: "dining", label: "Dining space" },
+    { id: "kitchen", label: "Kitchen" },
     { id: "pet", label: "Pet corner" },
     { id: "storage", label: "Extra storage" },
   ];
@@ -52,8 +59,8 @@ function SpaceProfilePage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!length || !width || !type) {
-      setFormError("Please fill length, width, and type.");
+    if (!length || !width || !height || !type) {
+      setFormError("Please fill length, width, height, and type.");
       return;
     }
     setFormError("");
@@ -61,9 +68,12 @@ function SpaceProfilePage() {
     const profile = {
       length: Number(length),
       width: Number(width),
+      height: Number(height),
       type,
       occupants,
       zones,
+      mobility,
+      loft,
     };
 
     setSpaceProfile(profile);
@@ -121,7 +131,7 @@ function SpaceProfilePage() {
             <TextField
               label="Length (m)"
               type="number"
-              inputProps={{ step: 0.1 }}
+              inputProps={{ step: 0.1, min: 1 }}
               value={length}
               onChange={(e) => setLength(e.target.value)}
               required
@@ -130,9 +140,18 @@ function SpaceProfilePage() {
             <TextField
               label="Width (m)"
               type="number"
-              inputProps={{ step: 0.1 }}
+              inputProps={{ step: 0.1, min: 1 }}
               value={width}
               onChange={(e) => setWidth(e.target.value)}
+              required
+              fullWidth
+            />
+            <TextField
+              label="Height (m)"
+              type="number"
+              inputProps={{ step: 0.05, min: 1 }}
+              value={height}
+              onChange={(e) => setHeight(e.target.value)}
               required
               fullWidth
             />
@@ -156,6 +175,44 @@ function SpaceProfilePage() {
               <MenuItem value="studio">Studio</MenuItem>
             </Select>
           </FormControl>
+
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2}
+            alignItems={{ xs: "flex-start", sm: "center" }}
+          >
+            <FormControl fullWidth>
+              <FormLabel>Home type (mobility)</FormLabel>
+              <Select
+                value={mobility}
+                onChange={(e) => setMobility(e.target.value)}
+                displayEmpty
+              >
+                <MenuItem value="mobile">Mobile (wheels/van)</MenuItem>
+                <MenuItem value="fixed">Fixed (cabin/studio)</MenuItem>
+              </Select>
+            </FormControl>
+            <Stack
+              direction="row"
+              spacing={1}
+              alignItems="center"
+              sx={{
+                p: 2,
+                borderRadius: 3,
+                border: "1px dashed",
+                borderColor: "divider",
+                minWidth: { xs: "100%", sm: 260 },
+              }}
+            >
+              <Switch checked={loft} onChange={(e) => setLoft(e.target.checked)} />
+              <Box>
+                <Typography fontWeight={600}>Include a loft</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Loft-friendly layouts unlock more ideas.
+                </Typography>
+              </Box>
+            </Stack>
+          </Stack>
 
           <FormControl component="fieldset">
             <FormLabel>Occupants</FormLabel>
