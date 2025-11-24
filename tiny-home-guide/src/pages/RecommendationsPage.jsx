@@ -541,14 +541,46 @@ function RecommendationsPage() {
         <Typography variant="h6" gutterBottom>
           Design tips for tiny homes
         </Typography>
-        <Stack spacing={1}>
-          {tips.map((tip) => (
-            <Card key={tip.id} variant="outlined">
-              <CardContent>
-                <Typography variant="body2">{tip.text}</Typography>
-              </CardContent>
-            </Card>
-          ))}
+        <Stack spacing={2}>
+          {["space_feeling", "safety", "comfort", "organization"].map(
+            (cat) => {
+              const catTips = tips.filter((t) => t.category === cat);
+              if (catTips.length === 0) return null;
+              const labelMap = {
+                space_feeling: "Space feeling",
+                safety: "Safety",
+                comfort: "Comfort",
+                organization: "Organization",
+              };
+              return (
+                <Box key={cat}>
+                  <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1 }}>
+                    {labelMap[cat] || cat}
+                  </Typography>
+                  <Stack spacing={1}>
+                    {catTips.map((tip) => (
+                      <Card key={tip.id} variant="outlined">
+                        <CardContent>
+                          <Typography fontWeight={600} gutterBottom>
+                            {tip.title}
+                          </Typography>
+                          <ul style={{ margin: 0, paddingLeft: 16 }}>
+                            {tip.bullets?.map((b) => (
+                              <li key={b}>
+                                <Typography variant="body2" color="text.secondary">
+                                  {b}
+                                </Typography>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </Stack>
+                </Box>
+              );
+            }
+          )}
         </Stack>
       </Box>
 
