@@ -27,6 +27,7 @@ import FavoritesPage from "./pages/FavoritesPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import SignupPage from "./pages/SignupPage.jsx";
 import OnboardingPage from "./pages/OnboardingPage.jsx";
+import SpaceVisualizerPage from "./pages/SpaceVisualizerPage.jsx";
 import { SpaceProvider } from "./context/SpaceContext.jsx";
 import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
 import {
@@ -78,6 +79,9 @@ function NavBar() {
               <Button color="inherit" component={RouterLink} to="/favorites">
                 Favorites
               </Button>
+              <Button color="inherit" component={RouterLink} to="/visualizer">
+                Visualizer
+              </Button>
             </>
           )}
         </Stack>
@@ -128,6 +132,7 @@ function AppShell() {
             <Route path="/space" element={<SpaceProfilePage />} />
             <Route path="/recommendations" element={<RecommendationsPage />} />
             <Route path="/favorites" element={<FavoritesPage />} />
+            <Route path="/visualizer" element={<SpaceVisualizerPage />} />
           </Route>
         </Routes>
       </Container>
