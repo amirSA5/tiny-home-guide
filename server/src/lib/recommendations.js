@@ -3,6 +3,7 @@ import { furnitureItems } from "../data/furnitureItems.js";
 import { layoutPatterns } from "../data/layoutPatterns.js";
 import { zoneArrangements } from "../data/zoneArrangements.js";
 import { minimalismGuides } from "../data/minimalismGuides.js";
+import { projectPlanner } from "../data/projectPlanner.js";
 
 function matchesMobility(allowed, profileMobility) {
   if (!allowed || allowed.length === 0) return true;
@@ -144,11 +145,13 @@ export function buildRecommendations(profile) {
       designTipsCount: designTips.length,
       arrangementIdeasCount: arrangements.length,
       minimalismCount: minimalismGuides.length,
+      plannerSections: 3,
     },
     layouts,
     furniture,
     designTips,
     arrangementIdeas: arrangements,
     minimalism: minimalismGuides,
+    projectPlanner,
   };
 }

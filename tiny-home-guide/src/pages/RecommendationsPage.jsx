@@ -27,6 +27,7 @@ import { layoutPatterns } from "../data/layoutPatterns.js";
 import { designTips } from "../data/designTips.js";
 import { zoneArrangements } from "../data/zoneArrangements.js";
 import { minimalismGuides } from "../data/minimalismGuides.js";
+import { projectPlanner } from "../data/projectPlanner.js";
 import { fetchRecommendations } from "../services/api.js";
 
 function matchesMobility(allowed, profileMobility) {
@@ -210,6 +211,7 @@ function RecommendationsPage() {
     designTips,
     arrangementIdeas: [],
     minimalism: [],
+    projectPlanner,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -261,6 +263,7 @@ function RecommendationsPage() {
             designTips: data.designTips || designTips,
             arrangementIdeas: data.arrangementIdeas || [],
             minimalism: data.minimalism || minimalismGuides,
+            projectPlanner: data.projectPlanner || projectPlanner,
           });
           setUsedFallback(false);
         }
@@ -272,6 +275,7 @@ function RecommendationsPage() {
             designTips,
             arrangementIdeas: filterArrangements(cleanProfile),
             minimalism: minimalismGuides,
+            projectPlanner,
           });
           setUsedFallback(true);
           setError(
@@ -314,6 +318,7 @@ function RecommendationsPage() {
   const tips = recommendations.designTips || [];
   const arrangements = recommendations.arrangementIdeas || [];
   const minimalism = recommendations.minimalism || [];
+  const planner = recommendations.projectPlanner || projectPlanner;
   const readableType = spaceProfile.type.replace("_", " ");
   const profileArea = spaceProfile.length * spaceProfile.width;
 
@@ -470,6 +475,102 @@ function RecommendationsPage() {
           {error} {usedFallback && "(offline fallback)"}
         </Alert>
       )}
+
+      <Box>
+        <Typography variant="h6" gutterBottom>
+          Tiny home project planner
+        </Typography>
+
+        <Card variant="outlined" sx={{ mb: 2 }}>
+          <CardContent>
+            <Typography fontWeight={600} gutterBottom>
+              Budget scaffold
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              Use these buckets as a starting point; plug in your local costs and add 10–15% buffer.
+            </Typography>
+            <Stack spacing={1}>
+              {planner.budget.categories.map((cat) => (
+                <Card key={cat.id} variant="outlined" sx={{ backgroundColor: "grey.50" }}>
+                  <CardContent>
+                    <Typography fontWeight={600}>{cat.label}</Typography>
+                    <ul style={{ margin: "4px 0 0 16px", padding: 0 }}>
+                      {cat.checklist.map((item) => (
+                        <li key={item}>
+                          <Typography variant="body2" color="text.secondary">
+                            {item}
+                          </Typography>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              ))}
+            </Stack>
+          </CardContent>
+        </Card>
+
+        <Card variant="outlined" sx={{ mb: 2 }}>
+          <CardContent>
+            <Typography fontWeight={600} gutterBottom>
+              Timeline (typical ranges)
+            </Typography>
+            <Stack spacing={1}>
+              {planner.timeline.map((phase) => (
+                <Card key={phase.phase} variant="outlined">
+                  <CardContent>
+                    <Stack
+                      direction={{ xs: "column", sm: "row" }}
+                      justifyContent="space-between"
+                      alignItems={{ xs: "flex-start", sm: "center" }}
+                    >
+                      <Typography fontWeight={600}>{phase.phase}</Typography>
+                      <Chip label={phase.duration} size="small" />
+                    </Stack>
+                    <ul style={{ margin: "4px 0 0 16px", padding: 0 }}>
+                      {phase.tasks.map((t) => (
+                        <li key={t}>
+                          <Typography variant="body2" color="text.secondary">
+                            {t}
+                          </Typography>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              ))}
+            </Stack>
+          </CardContent>
+        </Card>
+
+        <Card variant="outlined">
+          <CardContent>
+            <Typography fontWeight={600} gutterBottom>
+              Checklists
+            </Typography>
+            <Stack spacing={1.5}>
+              {planner.checklists.map((cl) => (
+                <Card key={cl.id} variant="outlined">
+                  <CardContent>
+                    <Typography fontWeight={600}>{cl.title}</Typography>
+                    <ul style={{ margin: "4px 0 0 16px", padding: 0 }}>
+                      {cl.items.map((it) => (
+                        <li key={it}>
+                          <Typography variant="body2" color="text.secondary">
+                            {it}
+                          </Typography>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              ))}
+            </Stack>
+          </CardContent>
+        </Card>
+      </Box>
+
+      <Divider />
 
       <Box>
         <Typography variant="h6" gutterBottom>
