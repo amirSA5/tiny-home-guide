@@ -1,5 +1,5 @@
 // src/pages/SpaceProfilePage.jsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Alert,
@@ -20,10 +20,12 @@ import {
   Typography,
 } from "@mui/material";
 import { useSpace } from "../context/SpaceContext.jsx";
+import { usePreferences } from "../context/PreferencesContext.jsx";
 
 function SpaceProfilePage() {
   const navigate = useNavigate();
   const { setSpaceProfile, spaceProfile } = useSpace();
+  const { preferences } = usePreferences();
 
   const [length, setLength] = useState(spaceProfile?.length || "");
   const [width, setWidth] = useState(spaceProfile?.width || "");
@@ -68,15 +70,46 @@ function SpaceProfilePage() {
     navigate("/recommendations");
   };
 
+  useEffect(() => {
+    if (!type && preferences?.spaceType) {
+      setType(preferences.spaceType);
+    }
+    if (!spaceProfile?.occupants && preferences?.occupants) {
+      setOccupants(preferences.occupants);
+    }
+  }, [preferences, spaceProfile, type]);
+
   return (
-    <Box display="flex" justifyContent="center">
-      <Paper elevation={3} sx={{ p: 4, width: "100%", maxWidth: 720 }}>
-        <Typography variant="h5" gutterBottom>
-          Space Profile
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Describe your tiny home so we can suggest layouts and furniture.
-        </Typography>
+    <Box
+      sx={{
+        minHeight: "calc(100vh - 140px)",
+        display: "flex",
+        justifyContent: "center",
+        p: { xs: 2, sm: 3 },
+        background:
+          "radial-gradient(circle at 12% 20%, rgba(47,133,90,0.10), transparent 24%), radial-gradient(circle at 80% 0%, rgba(29,78,216,0.12), transparent 26%), linear-gradient(135deg, #f8fbff 0%, #f1f7f4 100%)",
+      }}
+    >
+      <Paper
+        elevation={6}
+        sx={{
+          p: { xs: 3, sm: 4 },
+          width: "100%",
+          maxWidth: 820,
+          borderRadius: 4,
+          border: "1px solid",
+          borderColor: "divider",
+          boxShadow: "0 16px 44px rgba(0,0,0,0.08)",
+        }}
+      >
+        <Stack spacing={1.5} sx={{ mb: 1 }}>
+          <Typography variant="h5" gutterBottom>
+            Space Profile
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Describe your tiny home so we can suggest layouts and furniture tailored to you.
+          </Typography>
+        </Stack>
         {formError && (
           <Alert severity="warning" sx={{ mb: 2 }}>
             {formError}
@@ -112,6 +145,7 @@ function SpaceProfilePage() {
               onChange={(e) => setType(e.target.value)}
               displayEmpty
               required
+              sx={{ backgroundColor: "background.paper" }}
             >
               <MenuItem value="" disabled>
                 Select type

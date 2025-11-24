@@ -61,3 +61,22 @@ export async function fetchMe(token) {
   });
   return handleResponse(res);
 }
+
+export async function fetchPreferences(token) {
+  const res = await fetch(`${API_BASE}/api/preferences`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return handleResponse(res);
+}
+
+export async function savePreferences(token, preferences) {
+  const res = await fetch(`${API_BASE}/api/preferences`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(preferences),
+  });
+  return handleResponse(res);
+}

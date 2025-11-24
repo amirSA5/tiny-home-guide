@@ -1,8 +1,17 @@
 {
   "clients": {
     "6ad3aa51-e3f2-4e1c-b0fb-fc76a281d46d": {
-      "favorites": [],
-      "updatedAt": "2025-11-24T12:03:49.731Z"
+      "favorites": [
+        {
+          "type": "layout",
+          "id": "loft-bed-stairs-desk"
+        },
+        {
+          "type": "furniture",
+          "id": "wall-mounted-desk"
+        }
+      ],
+      "updatedAt": "2025-11-24T12:21:34.509Z"
     }
   }
 }

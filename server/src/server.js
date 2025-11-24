@@ -10,6 +10,7 @@ import {
   favoritesSchema,
   loginSchema,
   profileSchema,
+  preferencesSchema,
   registerSchema,
 } from "./lib/validation.js";
 import {
@@ -26,6 +27,10 @@ import {
   listUsers,
   validateCredentials,
 } from "./lib/userStore.js";
+import {
+  getPreferencesForUser,
+  upsertPreferences,
+} from "./lib/preferencesStore.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -145,6 +150,24 @@ app.put("/api/favorites/:clientId", async (req, res) => {
 
   const favorites = await setFavorites(clientId, parsed.data.favorites);
   return res.json({ favorites });
+});
+
+app.get("/api/preferences", authRequired, async (req, res) => {
+  const preferences = await getPreferencesForUser(req.user.id);
+  return res.json({ preferences });
+});
+
+app.put("/api/preferences", authRequired, async (req, res) => {
+  const parsed = preferencesSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({
+      error: "Invalid preferences payload",
+      details: parsed.error.flatten(),
+    });
+  }
+
+  const preferences = await upsertPreferences(req.user.id, parsed.data);
+  return res.json({ preferences });
 });
 
 app.use((err, req, res, _next) => {

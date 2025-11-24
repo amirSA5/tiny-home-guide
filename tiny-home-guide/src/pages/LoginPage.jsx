@@ -11,7 +11,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
 import LoginRoundedIcon from "@mui/icons-material/LoginRounded";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
@@ -19,17 +19,19 @@ import { useAuth } from "../context/AuthContext.jsx";
 
 function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, status, error } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [localError, setLocalError] = useState("");
+  const redirectTo = location.state?.from || "/onboarding";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLocalError("");
     try {
       await login(email, password);
-      navigate("/recommendations");
+      navigate(redirectTo, { replace: true });
     } catch (err) {
       setLocalError(err?.message || "Login failed");
     }

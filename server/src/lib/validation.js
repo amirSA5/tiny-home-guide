@@ -34,3 +34,10 @@ export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
 });
+
+export const preferencesSchema = z.object({
+  userType: z.enum(["planning", "already_living", "just_curious"]),
+  spaceType: z.enum(allowedTypes),
+  occupants: z.enum(allowedOccupants),
+  hasPets: z.boolean(),
+});

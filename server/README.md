@@ -34,5 +34,7 @@ The API now persists users with MongoDB + Mongoose. Set `MONGODB_URI` or make su
 - `POST /auth/login` - body: `{ email, password }`. Returns `{ user, token }`.
 - `GET /auth/me` - bearer token required. Returns current user.
 - `GET /admin/users` - bearer token + admin role required. Lists users (without password hashes).
+- `GET /api/preferences` - bearer token required. Returns `{ preferences }` for the current user (onboarding).
+- `PUT /api/preferences` - bearer token required. Body: `{ userType, spaceType, occupants, hasPets }`. Upserts onboarding preferences.
 
 Users and auth metadata live in MongoDB. Favorites are still stored in `server/data/favorites-store.json`; delete the file to reset favorites.

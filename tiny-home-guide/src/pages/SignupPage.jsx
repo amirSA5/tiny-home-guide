@@ -16,7 +16,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
 import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
@@ -26,12 +26,14 @@ import { useAuth } from "../context/AuthContext.jsx";
 
 function SignupPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signup, status, error } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
   const [inviteCode, setInviteCode] = useState("");
   const [localError, setLocalError] = useState("");
+  const redirectTo = location.state?.from || "/onboarding";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,7 +45,7 @@ function SignupPage() {
         role,
         adminInviteCode: role === "admin" ? inviteCode : undefined,
       });
-      navigate("/recommendations");
+      navigate(redirectTo, { replace: true });
     } catch (err) {
       setLocalError(err?.message || "Signup failed");
     }
