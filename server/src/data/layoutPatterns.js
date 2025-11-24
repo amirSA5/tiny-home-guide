@@ -1,4 +1,3 @@
-// src/data/layoutPatterns.js
 export const layoutPatterns = [
   {
     id: "loft-bed-stairs-desk",

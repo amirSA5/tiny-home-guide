@@ -5,13 +5,19 @@ import { layoutPatterns } from "../data/layoutPatterns.js";
 import { furnitureItems } from "../data/furnitureItems.js";
 
 function FavoritesPage() {
-  const { favorites } = useSpace();
+  const { favorites, favoritesSyncStatus, favoritesSyncError } = useSpace();
+
+  const syncMessage =
+    favoritesSyncError ||
+    (favoritesSyncStatus === "saving" && "Syncing favorites to server...") ||
+    (favoritesSyncStatus === "loading" && "Loading your favorites...") ||
+    null;
 
   if (!favorites || favorites.length === 0) {
     return (
       <div>
         <h2>Favorites</h2>
-        <p>You don’t have any favorites yet.</p>
+        <p>You don't have any favorites yet.</p>
         <p>
           Go to <Link to="/recommendations">Recommendations</Link> and save the
           layouts or furniture ideas you like.
@@ -33,7 +39,12 @@ function FavoritesPage() {
   return (
     <div>
       <h2>Favorites</h2>
-      <p>Here are the layout and furniture ideas you’ve saved.</p>
+      {syncMessage && (
+        <p style={{ color: favoritesSyncError ? "tomato" : "gray" }}>
+          {syncMessage}
+        </p>
+      )}
+      <p>Here are the layout and furniture ideas you've saved.</p>
 
       <section style={{ marginTop: 24 }}>
         <h3>Layout favorites</h3>

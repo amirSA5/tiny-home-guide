@@ -10,7 +10,9 @@ function WelcomePage() {
       </p>
 
       <p>Ready to start?</p>
-      <Link to="/space">Create your space profile →</Link>
+      <Link to="/space">
+        Create your space profile {"->"}
+      </Link>
     </div>
   );
 }

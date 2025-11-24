@@ -154,7 +154,9 @@ function SpaceProfilePage() {
           ))}
         </div>
 
-        <button type="submit">Generate ideas →</button>
+        <button type="submit">
+          Generate ideas {"->"}
+        </button>
       </form>
     </div>
   );

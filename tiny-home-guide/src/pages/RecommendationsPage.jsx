@@ -1,9 +1,11 @@
 // src/pages/RecommendationsPage.jsx
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSpace } from "../context/SpaceContext.jsx";
-import { layoutPatterns } from "../data/layoutPatterns.js";
 import { furnitureItems } from "../data/furnitureItems.js";
+import { layoutPatterns } from "../data/layoutPatterns.js";
 import { designTips } from "../data/designTips.js";
+import { fetchRecommendations } from "../services/api.js";
 
 function filterLayouts(spaceProfile) {
   if (!spaceProfile) return [];
@@ -49,6 +51,57 @@ function filterFurniture(spaceProfile) {
 
 function RecommendationsPage() {
   const { spaceProfile, toggleFavorite, isFavorite } = useSpace();
+  const [recommendations, setRecommendations] = useState({
+    layouts: [],
+    furniture: [],
+    designTips,
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [usedFallback, setUsedFallback] = useState(false);
+
+  useEffect(() => {
+    if (!spaceProfile) return;
+    let cancelled = false;
+
+    async function loadRecommendations() {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await fetchRecommendations(spaceProfile);
+        if (!cancelled) {
+          setRecommendations({
+            layouts: data.layouts || [],
+            furniture: data.furniture || [],
+            designTips: data.designTips || designTips,
+          });
+          setUsedFallback(false);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setRecommendations({
+            layouts: filterLayouts(spaceProfile),
+            furniture: filterFurniture(spaceProfile),
+            designTips,
+          });
+          setUsedFallback(true);
+          setError(
+            err?.message ||
+              "Could not reach the server. Showing local suggestions instead."
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadRecommendations();
+    return () => {
+      cancelled = true;
+    };
+  }, [spaceProfile]);
 
   if (!spaceProfile) {
     return (
@@ -58,14 +111,16 @@ function RecommendationsPage() {
           We need some info about your tiny home before we can suggest layouts
           and furniture.
         </p>
-        <Link to="/space">Create your space profile →</Link>
+        <Link to="/space">
+          Create your space profile {"->"}
+        </Link>
       </div>
     );
   }
 
-  const layouts = filterLayouts(spaceProfile);
-  const furniture = filterFurniture(spaceProfile);
-
+  const layouts = recommendations.layouts || [];
+  const furniture = recommendations.furniture || [];
+  const tips = recommendations.designTips || [];
   const readableType = spaceProfile.type.replace("_", " ");
 
   return (
@@ -73,8 +128,15 @@ function RecommendationsPage() {
       <h2>Recommendations</h2>
       <p>
         Here are ideas tailored to your {readableType} of approx.{" "}
-        {spaceProfile.length}m × {spaceProfile.width}m.
+        {spaceProfile.length}m x {spaceProfile.width}m.
       </p>
+
+      {loading && <p>Loading fresh recommendations...</p>}
+      {error && (
+        <p style={{ color: "tomato" }}>
+          {error} {usedFallback && "(offline fallback)"}
+        </p>
+      )}
 
       <section style={{ marginTop: 24 }}>
         <h3>Layout ideas</h3>
@@ -96,7 +158,7 @@ function RecommendationsPage() {
                     onClick={() => toggleFavorite("layout", lp.id)}
                     style={{ fontSize: "0.9em" }}
                   >
-                    {fav ? "★ Remove from favorites" : "☆ Save to favorites"}
+                    {fav ? "[x] Remove from favorites" : "[+] Save to favorites"}
                   </button>
                 </li>
               );
@@ -123,9 +185,9 @@ function RecommendationsPage() {
                       {item.footprint.width &&
                         `width ~${item.footprint.width}cm `}
                       {item.footprint.openDepth &&
-                        `· depth in use ~${item.footprint.openDepth}cm `}
+                        `- depth in use ~${item.footprint.openDepth}cm `}
                       {item.footprint.foldedDepth &&
-                        `· depth folded ~${item.footprint.foldedDepth}cm`}
+                        `- depth folded ~${item.footprint.foldedDepth}cm`}
                     </p>
                   )}
 
@@ -134,7 +196,7 @@ function RecommendationsPage() {
                     onClick={() => toggleFavorite("furniture", item.id)}
                     style={{ fontSize: "0.9em", marginTop: 4 }}
                   >
-                    {fav ? "★ Remove from favorites" : "☆ Save to favorites"}
+                    {fav ? "[x] Remove from favorites" : "[+] Save to favorites"}
                   </button>
                 </li>
               );
@@ -146,7 +208,7 @@ function RecommendationsPage() {
       <section style={{ marginTop: 24 }}>
         <h3>Design tips for tiny homes</h3>
         <ul style={{ paddingLeft: 18 }}>
-          {designTips.map((tip) => (
+          {tips.map((tip) => (
             <li key={tip.id} style={{ marginBottom: 8 }}>
               {tip.text}
             </li>
@@ -155,7 +217,9 @@ function RecommendationsPage() {
       </section>
 
       <div style={{ marginTop: 24 }}>
-        <Link to="/favorites">View your favorites →</Link>
+        <Link to="/favorites">
+          View your favorites {"->"}
+        </Link>
       </div>
     </div>
   );

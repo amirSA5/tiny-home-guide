@@ -1,11 +1,23 @@
 // src/context/SpaceContext.jsx
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import {
+  fetchFavorites,
+  saveFavorites,
+} from "../services/api.js";
 
 const SpaceContext = createContext(null);
 
 // localStorage keys
 const SPACE_PROFILE_KEY = "thg_spaceProfile";
 const FAVORITES_KEY = "thg_favorites";
+const CLIENT_ID_KEY = "thg_clientId";
+
+function generateClientId() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return `client-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
 
 export function SpaceProvider({ children }) {
   // --- INIT FROM LOCALSTORAGE ---
@@ -29,6 +41,23 @@ export function SpaceProvider({ children }) {
     }
   });
 
+  const [clientId] = useState(() => {
+    try {
+      const existing = localStorage.getItem(CLIENT_ID_KEY);
+      if (existing) return existing;
+      const created = generateClientId();
+      localStorage.setItem(CLIENT_ID_KEY, created);
+      return created;
+    } catch (e) {
+      console.warn("Failed to init clientId", e);
+      return generateClientId();
+    }
+  });
+
+  const [favoritesHydrated, setFavoritesHydrated] = useState(false);
+  const [favoritesSyncStatus, setFavoritesSyncStatus] = useState("idle");
+  const [favoritesSyncError, setFavoritesSyncError] = useState(null);
+
   // --- SYNC TO LOCALSTORAGE WHEN CHANGED ---
   useEffect(() => {
     try {
@@ -44,6 +73,16 @@ export function SpaceProvider({ children }) {
 
   useEffect(() => {
     try {
+      if (clientId) {
+        localStorage.setItem(CLIENT_ID_KEY, clientId);
+      }
+    } catch (e) {
+      console.warn("Failed to save clientId to localStorage", e);
+    }
+  }, [clientId]);
+
+  useEffect(() => {
+    try {
       if (favorites && favorites.length > 0) {
         localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
       } else {
@@ -53,6 +92,65 @@ export function SpaceProvider({ children }) {
       console.warn("Failed to save favorites to localStorage", e);
     }
   }, [favorites]);
+
+  // --- HYDRATE FAVORITES FROM SERVER ---
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadFromServer() {
+      if (!clientId) return;
+      setFavoritesSyncStatus("loading");
+      try {
+        const data = await fetchFavorites(clientId);
+        if (!cancelled && data?.favorites) {
+          setFavorites(data.favorites);
+        }
+        if (!cancelled) {
+          setFavoritesSyncStatus("ready");
+          setFavoritesSyncError(null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setFavoritesSyncStatus("error");
+          setFavoritesSyncError(err?.message || "Could not load favorites");
+        }
+      } finally {
+        if (!cancelled) {
+          setFavoritesHydrated(true);
+        }
+      }
+    }
+
+    loadFromServer();
+    return () => {
+      cancelled = true;
+    };
+  }, [clientId]);
+
+  // --- PERSIST FAVORITES TO SERVER ---
+  useEffect(() => {
+    let cancelled = false;
+    async function persist() {
+      if (!favoritesHydrated || !clientId) return;
+      try {
+        setFavoritesSyncStatus("saving");
+        await saveFavorites(clientId, favorites);
+        if (!cancelled) {
+          setFavoritesSyncStatus("ready");
+          setFavoritesSyncError(null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setFavoritesSyncStatus("error");
+          setFavoritesSyncError(err?.message || "Could not save favorites");
+        }
+      }
+    }
+    persist();
+    return () => {
+      cancelled = true;
+    };
+  }, [favoritesHydrated, clientId, favorites]);
 
   // --- FAVORITES HELPERS ---
   const toggleFavorite = (type, id) => {
@@ -72,9 +170,12 @@ export function SpaceProvider({ children }) {
   const value = {
     spaceProfile,
     setSpaceProfile,
+    clientId,
     favorites,
     toggleFavorite,
     isFavorite,
+    favoritesSyncStatus,
+    favoritesSyncError,
   };
 
   return (
@@ -82,6 +183,7 @@ export function SpaceProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSpace() {
   const ctx = useContext(SpaceContext);
   if (!ctx) {
