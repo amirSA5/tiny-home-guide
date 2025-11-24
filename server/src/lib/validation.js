@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const allowedTypes = ["tiny_house", "cabin", "van", "studio"];
-export const allowedZones = ["sleep", "work", "dining", "kitchen", "pet", "storage"];
+export const allowedZones = ["sleep", "work", "dining", "kitchen", "entry", "pet", "storage"];
 export const allowedOccupants = ["solo", "couple", "family"];
 export const allowedMobility = ["mobile", "fixed"];
 

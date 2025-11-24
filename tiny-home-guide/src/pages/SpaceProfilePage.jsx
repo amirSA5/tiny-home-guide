@@ -45,6 +45,7 @@ function SpaceProfilePage() {
     { id: "work", label: "Work / desk" },
     { id: "dining", label: "Dining space" },
     { id: "kitchen", label: "Kitchen" },
+    { id: "entry", label: "Entry / mudroom" },
     { id: "pet", label: "Pet corner" },
     { id: "storage", label: "Extra storage" },
   ];

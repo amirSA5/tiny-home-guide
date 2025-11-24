@@ -15,11 +15,15 @@
           "id": "raised-platform-storage"
         },
         {
-          "type": "layout",
-          "id": "sofa-bed-fold-table"
+          "type": "furniture",
+          "id": "murphy-bed-horizontal"
+        },
+        {
+          "type": "furniture",
+          "id": "storage-ottoman"
         }
       ],
-      "updatedAt": "2025-11-24T12:40:05.107Z"
+      "updatedAt": "2025-11-24T12:50:01.902Z"
     }
   }
 }

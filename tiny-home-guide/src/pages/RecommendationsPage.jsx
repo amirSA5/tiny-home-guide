@@ -10,6 +10,10 @@ import {
   CircularProgress,
   Divider,
   Chip,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
   Stack,
   Typography,
 } from "@mui/material";
@@ -155,6 +159,8 @@ function RecommendationsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [usedFallback, setUsedFallback] = useState(false);
+  const [zoneFilter, setZoneFilter] = useState("all");
+  const [styleFilter, setStyleFilter] = useState("all");
 
   useEffect(() => {
     if (!spaceProfile) return;
@@ -223,6 +229,16 @@ function RecommendationsPage() {
   const tips = recommendations.designTips || [];
   const arrangements = recommendations.arrangementIdeas || [];
   const readableType = spaceProfile.type.replace("_", " ");
+
+  const furnitureFiltered = furniture.filter((item) => {
+    if (zoneFilter !== "all" && !(item.zones || []).includes(zoneFilter)) {
+      return false;
+    }
+    if (styleFilter !== "all" && item.style !== styleFilter) {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <Stack spacing={3}>
@@ -384,29 +400,118 @@ function RecommendationsPage() {
         <Typography variant="h6" gutterBottom>
           Multifunctional furniture
         </Typography>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={1.5}
+          sx={{ mb: 2 }}
+        >
+          <FormControl size="small" sx={{ minWidth: 160 }}>
+            <InputLabel>Filter by zone</InputLabel>
+            <Select
+              label="Filter by zone"
+              value={zoneFilter}
+              onChange={(e) => setZoneFilter(e.target.value)}
+            >
+              <MenuItem value="all">All zones</MenuItem>
+              <MenuItem value="sleep">Sleep</MenuItem>
+              <MenuItem value="work">Work</MenuItem>
+              <MenuItem value="dining">Dining</MenuItem>
+              <MenuItem value="kitchen">Kitchen</MenuItem>
+              <MenuItem value="entry">Entry</MenuItem>
+              <MenuItem value="pet">Pet</MenuItem>
+              <MenuItem value="storage">Storage</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl size="small" sx={{ minWidth: 170 }}>
+            <InputLabel>Furniture type</InputLabel>
+            <Select
+              label="Furniture type"
+              value={styleFilter}
+              onChange={(e) => setStyleFilter(e.target.value)}
+            >
+              <MenuItem value="all">All types</MenuItem>
+              <MenuItem value="fold_down">Folding</MenuItem>
+              <MenuItem value="modular">Modular</MenuItem>
+              <MenuItem value="hidden_storage">Hidden storage</MenuItem>
+            </Select>
+          </FormControl>
+
+          <Button
+            variant="text"
+            onClick={() => {
+              setZoneFilter("all");
+              setStyleFilter("all");
+            }}
+            sx={{ alignSelf: { xs: "flex-start", sm: "center" } }}
+          >
+            Reset filters
+          </Button>
+        </Stack>
         {furniture.length === 0 ? (
           <Typography color="text.secondary">No furniture suggestions yet.</Typography>
         ) : (
           <Stack spacing={2}>
-            {furniture.map((item) => {
+            {furnitureFiltered.map((item) => {
               const fav = isFavorite("furniture", item.id);
               return (
                 <Card key={item.id} variant="outlined">
                   <CardContent>
-                    <Typography variant="subtitle1" fontWeight={600}>
-                      {item.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {item.bestLocation}
-                    </Typography>
+                    <Stack
+                      direction={{ xs: "column", sm: "row" }}
+                      spacing={1}
+                      alignItems={{ xs: "flex-start", sm: "center" }}
+                      justifyContent="space-between"
+                    >
+                      <Typography variant="subtitle1" fontWeight={600}>
+                        {item.name}
+                      </Typography>
+                      <Stack direction="row" spacing={1} flexWrap="wrap">
+                        {item.style && (
+                          <Chip
+                            label={
+                              item.style === "fold_down"
+                                ? "Folding"
+                                : item.style === "modular"
+                                ? "Modular"
+                                : item.style === "hidden_storage"
+                                ? "Hidden storage"
+                                : item.style
+                            }
+                            size="small"
+                          />
+                        )}
+                        {(item.zones || []).map((z) => (
+                          <Chip key={z} label={z} size="small" variant="outlined" />
+                        ))}
+                      </Stack>
+                    </Stack>
+
+                    {item.description && (
+                      <Typography variant="body2" sx={{ mt: 1 }}>
+                        {item.description}
+                      </Typography>
+                    )}
+                    {item.spaceSaving && (
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                        How it saves space: {item.spaceSaving}
+                      </Typography>
+                    )}
+                    {item.bestLocation && (
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                        Placement: {item.bestLocation}
+                      </Typography>
+                    )}
                     {item.footprint && (
                       <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                        Approx. footprint:{" "}
-                        {item.footprint.width && `width ~${item.footprint.width}cm `}{" "}
-                        {item.footprint.openDepth &&
-                          `- depth in use ~${item.footprint.openDepth}cm `}{" "}
-                        {item.footprint.foldedDepth &&
-                          `- depth folded ~${item.footprint.foldedDepth}cm`}
+                        Footprint: {item.footprint.width ? `width ~${item.footprint.width}cm` : ""}
+                        {item.footprint.openDepth
+                          ? ` · depth in use ~${item.footprint.openDepth}cm`
+                          : ""}
+                        {item.footprint.foldedDepth
+                          ? ` · folded depth ~${item.footprint.foldedDepth}cm`
+                          : ""}
+                        {item.footprint.height ? ` · height ~${item.footprint.height}cm` : ""}
                       </Typography>
                     )}
                     <Button
@@ -421,6 +526,11 @@ function RecommendationsPage() {
                 </Card>
               );
             })}
+            {furnitureFiltered.length === 0 && (
+              <Typography color="text.secondary">
+                No matches for these filters. Try resetting them.
+              </Typography>
+            )}
           </Stack>
         )}
       </Box>
