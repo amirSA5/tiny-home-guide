@@ -4,6 +4,7 @@ export const layoutPatterns = [
     title: "Loft bed + storage stairs + wall-mounted desk",
     description:
       "Raise the bed to create headroom underneath. Use stairs with drawers for storage and mount a compact desk on the wall.",
+    styleTags: ["minimal", "functional"],
     requiredFeatures: ["loft", "storage stairs", "wall-mounted desk"],
     pros: [
       "Frees main floor for living",
@@ -25,6 +26,7 @@ export const layoutPatterns = [
     title: "Sofa-bed + fold-down dining table",
     description:
       "Use a quality sofa-bed as main seating and sleeping, with a fold-down table that only opens for meals or work.",
+    styleTags: ["cozy", "flexible"],
     requiredFeatures: ["sofa-bed", "fold-down table", "sturdy wall backing"],
     pros: [
       "Maximizes flexibility in a small footprint",
@@ -44,6 +46,7 @@ export const layoutPatterns = [
     title: "Raised platform bed with drawers",
     description:
       "Build a raised platform with pull-out drawers underneath for clothes, bedding and seasonal items.",
+    styleTags: ["built-in", "storage"],
     requiredFeatures: ["platform bed", "deep drawers", "ventilated base"],
     pros: [
       "Adds significant hidden storage",
@@ -63,6 +66,7 @@ export const layoutPatterns = [
     title: "Compact bunk bed + family corner",
     description:
       "Use bunk beds or a loft + lower bed combo to sleep multiple people while keeping a small shared sitting area.",
+    styleTags: ["family", "compact"],
     requiredFeatures: ["bunk or loft + lower bed", "guard rails", "ladder"],
     pros: [
       "Sleeps multiple people",
@@ -82,6 +86,7 @@ export const layoutPatterns = [
     title: "Galley kitchen + wet bath core",
     description:
       "Keep plumbing on one wall with a galley kitchen and compact wet bath across; ideal for mobile tiny homes.",
+    styleTags: ["mobile", "functional"],
     requiredFeatures: ["galley kitchen", "shared wet wall", "compact wet bath"],
     pros: [
       "Simplifies plumbing runs",
@@ -102,6 +107,7 @@ export const layoutPatterns = [
     title: "Loft above entry with lounge below",
     description:
       "Place the loft bed above the entry or bath volume to free the main area for seating and dining.",
+    styleTags: ["airy", "loft"],
     requiredFeatures: ["loft", "compact stairs or ladder", "skylight preferred"],
     pros: [
       "Preserves main floor for daytime use",
@@ -124,6 +130,7 @@ export const layoutPatterns = [
     title: "U-shaped kitchen + pocket door",
     description:
       "For fixed cabins and studios, use a compact U-kitchen with a pocket door to the bath; keep dining/work opposite.",
+    styleTags: ["cook-friendly", "cozy"],
     requiredFeatures: ["U-shaped kitchen", "pocket door", "ventilation"],
     pros: [
       "Max counter space in small area",
@@ -145,6 +152,7 @@ export const layoutPatterns = [
     title: "Loft bed over workspace + sliding partition",
     description:
       "Use a loft bed over a desk and add a light sliding panel to separate work from sleep without losing light.",
+    styleTags: ["work-from-home", "loft"],
     requiredFeatures: ["loft", "desk under loft", "sliding panel"],
     pros: [
       "Creates visual separation for work",

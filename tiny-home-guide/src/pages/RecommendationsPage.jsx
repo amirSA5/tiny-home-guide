@@ -1,5 +1,5 @@
 // src/pages/RecommendationsPage.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import {
   Alert,
@@ -10,6 +10,10 @@ import {
   CircularProgress,
   Divider,
   Chip,
+  TextField,
+  Slider,
+  Checkbox,
+  ListItemText,
   FormControl,
   InputLabel,
   MenuItem,
@@ -75,6 +79,11 @@ function attachScores(patterns, profile) {
   return patterns
     .map((p) => ({ ...p, matchScore: computeLayoutScore(p, profile) }))
     .sort((a, b) => b.matchScore - a.matchScore);
+}
+
+function matchesSearch(text, query) {
+  if (!query) return true;
+  return text?.toLowerCase().includes(query.toLowerCase());
 }
 
 function filterLayouts(spaceProfile) {
@@ -149,6 +158,50 @@ function filterArrangements(spaceProfile) {
   });
 }
 
+const allowedTypes = ["tiny_house", "cabin", "van", "studio"];
+const allowedOccupants = ["solo", "couple", "family"];
+const allowedZones = ["sleep", "work", "dining", "kitchen", "entry", "pet", "storage"];
+const allowedMobility = ["mobile", "fixed"];
+
+function sanitizeProfile(profile) {
+  if (!profile) return null;
+  const toNum = (v, fallback) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : fallback;
+  };
+  const cleanType = allowedTypes.includes(profile.type)
+    ? profile.type
+    : "tiny_house";
+  const cleanOccupants = allowedOccupants.includes(profile.occupants)
+    ? profile.occupants
+    : "solo";
+  const cleanZones =
+    Array.isArray(profile.zones) && profile.zones.length > 0
+      ? profile.zones.filter((z) => allowedZones.includes(z))
+      : [];
+
+  const clean = {
+    ...profile,
+    length: toNum(profile.length, 0),
+    width: toNum(profile.width, 0),
+    height: toNum(profile.height, 2.7),
+    zones: cleanZones.length > 0 ? cleanZones : ["sleep", "work", "kitchen"],
+    mobility: allowedMobility.includes(profile.mobility) ? profile.mobility : "mobile",
+    type: cleanType,
+    occupants: cleanOccupants,
+  };
+  return clean;
+}
+
+function isProfileValid(profile) {
+  if (!profile) return false;
+  if (!allowedTypes.includes(profile.type)) return false;
+  if (!allowedOccupants.includes(profile.occupants)) return false;
+  if (!Array.isArray(profile.zones) || profile.zones.length === 0) return false;
+  if (profile.length <= 0 || profile.width <= 0 || profile.height <= 0) return false;
+  return true;
+}
+
 function RecommendationsPage() {
   const { spaceProfile, toggleFavorite, isFavorite } = useSpace();
   const [recommendations, setRecommendations] = useState({
@@ -163,6 +216,28 @@ function RecommendationsPage() {
   const [usedFallback, setUsedFallback] = useState(false);
   const [zoneFilter, setZoneFilter] = useState("all");
   const [styleFilter, setStyleFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [areaRange, setAreaRange] = useState(() => {
+    const area = spaceProfile ? spaceProfile.length * spaceProfile.width : 12;
+    const min = Math.max(5, Math.floor(area - 5));
+    const max = Math.ceil(area + 10);
+    return [min, max];
+  });
+  const [zoneMulti, setZoneMulti] = useState([]);
+  const zoneOptions = ["sleep", "work", "dining", "kitchen", "entry", "pet", "storage"];
+  const styleOptions = useMemo(() => {
+    const set = new Set();
+    layoutPatterns.forEach((lp) => lp.styleTags?.forEach((t) => set.add(t)));
+    furnitureItems.forEach((it) => it.styleTags?.forEach((t) => set.add(t)));
+    return ["all", ...Array.from(set)];
+  }, []);
+
+  useEffect(() => {
+    const area = spaceProfile ? spaceProfile.length * spaceProfile.width : 12;
+    const min = Math.max(5, Math.floor(area - 5));
+    const max = Math.ceil(area + 10);
+    setAreaRange([min, max]);
+  }, [spaceProfile]);
 
   useEffect(() => {
     if (!spaceProfile) return;
@@ -171,8 +246,14 @@ function RecommendationsPage() {
     async function loadRecommendations() {
       setLoading(true);
       setError(null);
+      const cleanProfile = sanitizeProfile(spaceProfile);
+       if (!isProfileValid(cleanProfile)) {
+        setError("Please complete your space profile (length, width, height, type, zones).");
+        setLoading(false);
+        return;
+      }
       try {
-        const data = await fetchRecommendations(spaceProfile);
+        const data = await fetchRecommendations(cleanProfile);
         if (!cancelled) {
           setRecommendations({
             layouts: data.layouts || [],
@@ -186,10 +267,10 @@ function RecommendationsPage() {
       } catch (err) {
         if (!cancelled) {
           setRecommendations({
-            layouts: attachScores(filterLayouts(spaceProfile), spaceProfile),
-            furniture: filterFurniture(spaceProfile),
+            layouts: attachScores(filterLayouts(cleanProfile), cleanProfile),
+            furniture: filterFurniture(cleanProfile),
             designTips,
-            arrangementIdeas: filterArrangements(spaceProfile),
+            arrangementIdeas: filterArrangements(cleanProfile),
             minimalism: minimalismGuides,
           });
           setUsedFallback(true);
@@ -234,16 +315,76 @@ function RecommendationsPage() {
   const arrangements = recommendations.arrangementIdeas || [];
   const minimalism = recommendations.minimalism || [];
   const readableType = spaceProfile.type.replace("_", " ");
+  const profileArea = spaceProfile.length * spaceProfile.width;
 
   const furnitureFiltered = furniture.filter((item) => {
     if (zoneFilter !== "all" && !(item.zones || []).includes(zoneFilter)) {
       return false;
     }
-    if (styleFilter !== "all" && item.style !== styleFilter) {
+    if (
+      styleFilter !== "all" &&
+      !(
+        item.style === styleFilter ||
+        (item.styleTags || []).includes(styleFilter)
+      )
+    ) {
+      return false;
+    }
+    if (
+      searchQuery &&
+      !matchesSearch(
+        `${item.name} ${item.description || ""} ${item.spaceSaving || ""}`,
+        searchQuery
+      )
+    ) {
+      return false;
+    }
+    if (
+      zoneMulti.length > 0 &&
+      !zoneMulti.every((z) => (item.zones || []).includes(z))
+    ) {
       return false;
     }
     return true;
   });
+
+  const layoutsFiltered = layouts.filter((lp) => {
+    if (
+      searchQuery &&
+      !matchesSearch(`${lp.title} ${lp.description || ""}`, searchQuery)
+    ) {
+      return false;
+    }
+    if (zoneMulti.length > 0) {
+      const zones = lp.recommendedFor?.zones || [];
+      if (!zoneMulti.every((z) => zones.includes(z))) {
+        return false;
+      }
+    }
+    if (
+      styleFilter !== "all" &&
+      !(lp.styleTags || []).includes(styleFilter)
+    ) {
+      return false;
+    }
+    if (areaRange?.length === 2 && lp.minArea) {
+      if (lp.minArea < areaRange[0] || lp.minArea > areaRange[1]) return false;
+    }
+    return true;
+  });
+
+  const tipsFiltered = tips.filter((tip) =>
+    matchesSearch(`${tip.title} ${tip.bullets?.join(" ")}`, searchQuery)
+  );
+
+  const minimalismFiltered = minimalism.filter((guide) =>
+    matchesSearch(
+      `${guide.title} ${guide.summary || ""} ${guide.steps?.join(" ")} ${
+        guide.items?.join(" ") || ""
+      }`,
+      searchQuery
+    )
+  );
 
   return (
     <Stack spacing={3}>
@@ -257,6 +398,66 @@ function RecommendationsPage() {
           {spaceProfile.mobility === "mobile" ? "mobile" : "fixed"}).
         </Typography>
       </Box>
+
+      <Card variant="outlined">
+        <CardContent>
+          <Stack spacing={2}>
+            <TextField
+              label="Search layouts, furniture, tips"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              fullWidth
+            />
+            <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Zones (multi)</InputLabel>
+                <Select
+                  multiple
+                  label="Zones (multi)"
+                  value={zoneMulti}
+                  onChange={(e) => setZoneMulti(e.target.value)}
+                  renderValue={(selected) => (selected.length ? selected.join(", ") : "Any")}
+                >
+                  {zoneOptions.map((z) => (
+                    <MenuItem key={z} value={z}>
+                      <Checkbox checked={zoneMulti.indexOf(z) > -1} />
+                      <ListItemText primary={z} />
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth size="small">
+                <InputLabel>Style tag</InputLabel>
+                <Select
+                  label="Style tag"
+                  value={styleFilter}
+                  onChange={(e) => setStyleFilter(e.target.value)}
+                >
+                  {styleOptions.map((s) => (
+                    <MenuItem key={s} value={s}>
+                      {s === "all" ? "All styles" : s}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Stack>
+            <Box>
+              <Typography variant="body2" gutterBottom>
+                Area range filter (m²) — your space ~{Math.round(profileArea)}m²
+              </Typography>
+              <Slider
+                value={areaRange}
+                min={5}
+                max={50}
+                step={1}
+                valueLabelDisplay="auto"
+                onChange={(_e, val) => setAreaRange(val)}
+              />
+            </Box>
+          </Stack>
+        </CardContent>
+      </Card>
 
       {loading && (
         <Stack direction="row" spacing={1} alignItems="center">
@@ -379,14 +580,14 @@ function RecommendationsPage() {
         <Typography variant="h6" gutterBottom>
           Layout ideas
         </Typography>
-        {layouts.length === 0 ? (
+        {layoutsFiltered.length === 0 ? (
           <Typography color="text.secondary">
             No specific layout patterns matched yet, but you can still explore furniture ideas
             below.
           </Typography>
         ) : (
           <Stack spacing={2}>
-            {layouts.map((lp, idx) => {
+            {layoutsFiltered.map((lp, idx) => {
               const fav = isFavorite("layout", lp.id);
               return (
                 <Card key={lp.id} variant="outlined">

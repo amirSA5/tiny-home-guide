@@ -16,6 +16,7 @@ export const furnitureItems = [
       openDepth: 60,
       width: 90,
     },
+    styleTags: ["minimal", "work-from-home"],
   },
   {
     id: "fold-down-table",
@@ -32,6 +33,7 @@ export const furnitureItems = [
       openDepth: 70,
       width: 100,
     },
+    styleTags: ["cozy", "flexible"],
   },
   {
     id: "murphy-bed-horizontal",
@@ -50,6 +52,7 @@ export const furnitureItems = [
       openDepth: 210,
       width: 190,
     },
+    styleTags: ["minimal", "sleep"],
   },
   {
     id: "storage-ottoman",
@@ -65,6 +68,7 @@ export const furnitureItems = [
       openDepth: 40,
       width: 90,
     },
+    styleTags: ["cozy", "hidden-storage"],
   },
   {
     id: "stairs-with-drawers",
@@ -81,6 +85,7 @@ export const furnitureItems = [
       openDepth: 90,
       width: 60,
     },
+    styleTags: ["built-in", "storage"],
   },
   {
     id: "pet-corner-unit",
@@ -97,6 +102,7 @@ export const furnitureItems = [
       openDepth: 50,
       width: 50,
     },
+    styleTags: ["pet", "entry"],
   },
   {
     id: "modular-shelves-grid",
@@ -113,6 +119,7 @@ export const furnitureItems = [
       width: 120,
       height: 180,
     },
+    styleTags: ["modular", "storage"],
   },
   {
     id: "storage-bench-entry",
@@ -128,5 +135,6 @@ export const furnitureItems = [
       openDepth: 38,
       width: 95,
     },
+    styleTags: ["entry", "hidden-storage"],
   },
 ];
