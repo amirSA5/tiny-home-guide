@@ -22,6 +22,7 @@ import { furnitureItems } from "../data/furnitureItems.js";
 import { layoutPatterns } from "../data/layoutPatterns.js";
 import { designTips } from "../data/designTips.js";
 import { zoneArrangements } from "../data/zoneArrangements.js";
+import { minimalismGuides } from "../data/minimalismGuides.js";
 import { fetchRecommendations } from "../services/api.js";
 
 function matchesMobility(allowed, profileMobility) {
@@ -155,6 +156,7 @@ function RecommendationsPage() {
     furniture: [],
     designTips,
     arrangementIdeas: [],
+    minimalism: [],
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -177,6 +179,7 @@ function RecommendationsPage() {
             furniture: data.furniture || [],
             designTips: data.designTips || designTips,
             arrangementIdeas: data.arrangementIdeas || [],
+            minimalism: data.minimalism || minimalismGuides,
           });
           setUsedFallback(false);
         }
@@ -187,6 +190,7 @@ function RecommendationsPage() {
             furniture: filterFurniture(spaceProfile),
             designTips,
             arrangementIdeas: filterArrangements(spaceProfile),
+            minimalism: minimalismGuides,
           });
           setUsedFallback(true);
           setError(
@@ -228,6 +232,7 @@ function RecommendationsPage() {
   const furniture = recommendations.furniture || [];
   const tips = recommendations.designTips || [];
   const arrangements = recommendations.arrangementIdeas || [];
+  const minimalism = recommendations.minimalism || [];
   const readableType = spaceProfile.type.replace("_", " ");
 
   const furnitureFiltered = furniture.filter((item) => {
@@ -264,6 +269,71 @@ function RecommendationsPage() {
           {error} {usedFallback && "(offline fallback)"}
         </Alert>
       )}
+
+      <Box>
+        <Typography variant="h6" gutterBottom>
+          Minimalism & decluttering coach
+        </Typography>
+        <Stack spacing={2}>
+          {minimalism.map((guide) => (
+            <Card key={guide.id} variant="outlined">
+              <CardContent>
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={1}
+                  alignItems={{ xs: "flex-start", sm: "center" }}
+                  justifyContent="space-between"
+                >
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    {guide.title}
+                  </Typography>
+                  <Chip
+                    size="small"
+                    label={
+                      guide.type === "flow"
+                        ? "Step-by-step"
+                        : guide.type === "rule"
+                        ? "Rule"
+                        : guide.type === "challenge"
+                        ? "Challenge"
+                        : "Checklist"
+                    }
+                  />
+                </Stack>
+                {guide.summary && (
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                    {guide.summary}
+                  </Typography>
+                )}
+                {guide.steps && (
+                  <ol style={{ margin: "8px 0 0 16px", padding: 0 }}>
+                    {guide.steps.map((s) => (
+                      <li key={s}>
+                        <Typography variant="body2" color="text.secondary">
+                          {s}
+                        </Typography>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+                {guide.items && (
+                  <ul style={{ margin: "8px 0 0 16px", padding: 0 }}>
+                    {guide.items.map((s) => (
+                      <li key={s}>
+                        <Typography variant="body2" color="text.secondary">
+                          {s}
+                        </Typography>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </Stack>
+      </Box>
+
+      <Divider />
 
       <Box>
         <Typography variant="h6" gutterBottom>
