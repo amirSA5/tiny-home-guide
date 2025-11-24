@@ -11,10 +11,8 @@ function filterLayouts(spaceProfile) {
   const area = spaceProfile.length * spaceProfile.width;
 
   return layoutPatterns.filter((lp) => {
-    // area constraint
     if (lp.minArea && lp.minArea > area) return false;
 
-    // type match (if specified)
     if (
       lp.recommendedFor?.type &&
       !lp.recommendedFor.type.includes(spaceProfile.type)
@@ -22,7 +20,6 @@ function filterLayouts(spaceProfile) {
       return false;
     }
 
-    // occupants match (if specified)
     if (
       lp.recommendedFor?.occupants &&
       !lp.recommendedFor.occupants.includes(spaceProfile.occupants)
@@ -30,7 +27,6 @@ function filterLayouts(spaceProfile) {
       return false;
     }
 
-    // at least one zone in common (if zones specified)
     if (lp.recommendedFor?.zones) {
       const hasCommonZone = lp.recommendedFor.zones.some((z) =>
         spaceProfile.zones.includes(z)
@@ -52,7 +48,7 @@ function filterFurniture(spaceProfile) {
 }
 
 function RecommendationsPage() {
-  const { spaceProfile } = useSpace();
+  const { spaceProfile, toggleFavorite, isFavorite } = useSpace();
 
   if (!spaceProfile) {
     return (
@@ -70,12 +66,14 @@ function RecommendationsPage() {
   const layouts = filterLayouts(spaceProfile);
   const furniture = filterFurniture(spaceProfile);
 
+  const readableType = spaceProfile.type.replace("_", " ");
+
   return (
     <div>
       <h2>Recommendations</h2>
       <p>
-        Here are ideas tailored to your {spaceProfile.type.replace("_", " ")} of{" "}
-        approx. {spaceProfile.length}m × {spaceProfile.width}m.
+        Here are ideas tailored to your {readableType} of approx.{" "}
+        {spaceProfile.length}m × {spaceProfile.width}m.
       </p>
 
       <section style={{ marginTop: 24 }}>
@@ -87,12 +85,22 @@ function RecommendationsPage() {
           </p>
         ) : (
           <ul style={{ paddingLeft: 18 }}>
-            {layouts.map((lp) => (
-              <li key={lp.id} style={{ marginBottom: 12 }}>
-                <strong>{lp.title}</strong>
-                <p style={{ margin: "4px 0" }}>{lp.description}</p>
-              </li>
-            ))}
+            {layouts.map((lp) => {
+              const fav = isFavorite("layout", lp.id);
+              return (
+                <li key={lp.id} style={{ marginBottom: 12 }}>
+                  <strong>{lp.title}</strong>
+                  <p style={{ margin: "4px 0" }}>{lp.description}</p>
+                  <button
+                    type="button"
+                    onClick={() => toggleFavorite("layout", lp.id)}
+                    style={{ fontSize: "0.9em" }}
+                  >
+                    {fav ? "★ Remove from favorites" : "☆ Save to favorites"}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
@@ -103,23 +111,34 @@ function RecommendationsPage() {
           <p>No furniture suggestions yet.</p>
         ) : (
           <ul style={{ paddingLeft: 18 }}>
-            {furniture.map((item) => (
-              <li key={item.id} style={{ marginBottom: 12 }}>
-                <strong>{item.name}</strong>
-                <p style={{ margin: "2px 0" }}>{item.bestLocation}</p>
-                {item.footprint && (
-                  <p style={{ margin: "2px 0", fontSize: "0.9em" }}>
-                    Approx. footprint:{" "}
-                    {item.footprint.width &&
-                      `width ~${item.footprint.width}cm `}
-                    {item.footprint.openDepth &&
-                      `· depth in use ~${item.footprint.openDepth}cm `}
-                    {item.footprint.foldedDepth &&
-                      `· depth folded ~${item.footprint.foldedDepth}cm`}
-                  </p>
-                )}
-              </li>
-            ))}
+            {furniture.map((item) => {
+              const fav = isFavorite("furniture", item.id);
+              return (
+                <li key={item.id} style={{ marginBottom: 12 }}>
+                  <strong>{item.name}</strong>
+                  <p style={{ margin: "2px 0" }}>{item.bestLocation}</p>
+                  {item.footprint && (
+                    <p style={{ margin: "2px 0", fontSize: "0.9em" }}>
+                      Approx. footprint:{" "}
+                      {item.footprint.width &&
+                        `width ~${item.footprint.width}cm `}
+                      {item.footprint.openDepth &&
+                        `· depth in use ~${item.footprint.openDepth}cm `}
+                      {item.footprint.foldedDepth &&
+                        `· depth folded ~${item.footprint.foldedDepth}cm`}
+                    </p>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => toggleFavorite("furniture", item.id)}
+                    style={{ fontSize: "0.9em", marginTop: 4 }}
+                  >
+                    {fav ? "★ Remove from favorites" : "☆ Save to favorites"}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
@@ -134,6 +153,10 @@ function RecommendationsPage() {
           ))}
         </ul>
       </section>
+
+      <div style={{ marginTop: 24 }}>
+        <Link to="/favorites">View your favorites →</Link>
+      </div>
     </div>
   );
 }
