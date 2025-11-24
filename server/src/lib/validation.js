@@ -20,8 +20,9 @@ export const favoritesSchema = z.object({
   favorites: z
     .array(
       z.object({
-        type: z.enum(["layout", "furniture"]),
+        type: z.enum(["layout", "furniture", "tip"]),
         id: z.string().trim().min(1),
+        board: z.string().trim().min(1).max(50).optional(),
       })
     )
     .max(200),

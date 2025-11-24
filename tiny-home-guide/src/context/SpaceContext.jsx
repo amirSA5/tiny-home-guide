@@ -12,6 +12,14 @@ const SPACE_PROFILE_KEY = "thg_spaceProfile";
 const FAVORITES_KEY = "thg_favorites";
 const CLIENT_ID_KEY = "thg_clientId";
 
+export const DEFAULT_BOARDS = [
+  "General",
+  "Sleep zone ideas",
+  "Office corner",
+  "Kitchen storage",
+  "Entry/Pet",
+];
+
 function generateClientId() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
     return crypto.randomUUID();
@@ -183,6 +191,14 @@ export function SpaceProvider({ children }) {
     return favorites.some((f) => f.type === type && f.id === id);
   };
 
+  const setFavoriteBoard = (type, id, board) => {
+    setFavorites((prev) =>
+      prev.map((f) =>
+        f.type === type && f.id === id ? { ...f, board: board || undefined } : f
+      )
+    );
+  };
+
   const updateSpaceProfile = (profile) => {
     setSpaceProfileState(normalizeProfile(profile));
   };
@@ -194,6 +210,7 @@ export function SpaceProvider({ children }) {
     favorites,
     toggleFavorite,
     isFavorite,
+    setFavoriteBoard,
     favoritesSyncStatus,
     favoritesSyncError,
   };

@@ -275,61 +275,73 @@ function RecommendationsPage() {
           Minimalism & decluttering coach
         </Typography>
         <Stack spacing={2}>
-          {minimalism.map((guide) => (
-            <Card key={guide.id} variant="outlined">
-              <CardContent>
-                <Stack
-                  direction={{ xs: "column", sm: "row" }}
-                  spacing={1}
-                  alignItems={{ xs: "flex-start", sm: "center" }}
-                  justifyContent="space-between"
-                >
-                  <Typography variant="subtitle1" fontWeight={600}>
-                    {guide.title}
-                  </Typography>
-                  <Chip
-                    size="small"
-                    label={
-                      guide.type === "flow"
-                        ? "Step-by-step"
-                        : guide.type === "rule"
-                        ? "Rule"
-                        : guide.type === "challenge"
-                        ? "Challenge"
-                        : "Checklist"
-                    }
-                  />
-                </Stack>
-                {guide.summary && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                    {guide.summary}
-                  </Typography>
-                )}
-                {guide.steps && (
-                  <ol style={{ margin: "8px 0 0 16px", padding: 0 }}>
-                    {guide.steps.map((s) => (
-                      <li key={s}>
-                        <Typography variant="body2" color="text.secondary">
-                          {s}
-                        </Typography>
-                      </li>
-                    ))}
-                  </ol>
-                )}
-                {guide.items && (
-                  <ul style={{ margin: "8px 0 0 16px", padding: 0 }}>
-                    {guide.items.map((s) => (
-                      <li key={s}>
-                        <Typography variant="body2" color="text.secondary">
-                          {s}
-                        </Typography>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+          {minimalism.map((guide) => {
+            const fav = isFavorite("tip", guide.id);
+            return (
+              <Card key={guide.id} variant="outlined">
+                <CardContent>
+                  <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={1}
+                    alignItems={{ xs: "flex-start", sm: "center" }}
+                    justifyContent="space-between"
+                  >
+                    <Typography variant="subtitle1" fontWeight={600}>
+                      {guide.title}
+                    </Typography>
+                    <Stack direction="row" spacing={1}>
+                      <Chip
+                        size="small"
+                        label={
+                          guide.type === "flow"
+                            ? "Step-by-step"
+                            : guide.type === "rule"
+                            ? "Rule"
+                            : guide.type === "challenge"
+                            ? "Challenge"
+                            : "Checklist"
+                        }
+                      />
+                      <Button
+                        size="small"
+                        variant={fav ? "contained" : "outlined"}
+                        onClick={() => toggleFavorite("tip", guide.id)}
+                      >
+                        {fav ? "Saved" : "Save"}
+                      </Button>
+                    </Stack>
+                  </Stack>
+                  {guide.summary && (
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                      {guide.summary}
+                    </Typography>
+                  )}
+                  {guide.steps && (
+                    <ol style={{ margin: "8px 0 0 16px", padding: 0 }}>
+                      {guide.steps.map((s) => (
+                        <li key={s}>
+                          <Typography variant="body2" color="text.secondary">
+                            {s}
+                          </Typography>
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                  {guide.items && (
+                    <ul style={{ margin: "8px 0 0 16px", padding: 0 }}>
+                      {guide.items.map((s) => (
+                        <li key={s}>
+                          <Typography variant="body2" color="text.secondary">
+                            {s}
+                          </Typography>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </Stack>
       </Box>
 
@@ -628,24 +640,41 @@ function RecommendationsPage() {
                     {labelMap[cat] || cat}
                   </Typography>
                   <Stack spacing={1}>
-                    {catTips.map((tip) => (
-                      <Card key={tip.id} variant="outlined">
-                        <CardContent>
-                          <Typography fontWeight={600} gutterBottom>
-                            {tip.title}
-                          </Typography>
-                          <ul style={{ margin: 0, paddingLeft: 16 }}>
-                            {tip.bullets?.map((b) => (
-                              <li key={b}>
-                                <Typography variant="body2" color="text.secondary">
-                                  {b}
-                                </Typography>
-                              </li>
-                            ))}
-                          </ul>
-                        </CardContent>
-                      </Card>
-                    ))}
+                    {catTips.map((tip) => {
+                      const fav = isFavorite("tip", tip.id);
+                      return (
+                        <Card key={tip.id} variant="outlined">
+                          <CardContent>
+                            <Stack
+                              direction={{ xs: "column", sm: "row" }}
+                              spacing={1}
+                              alignItems={{ xs: "flex-start", sm: "center" }}
+                              justifyContent="space-between"
+                            >
+                              <Typography fontWeight={600} gutterBottom>
+                                {tip.title}
+                              </Typography>
+                              <Button
+                                size="small"
+                                variant={fav ? "contained" : "outlined"}
+                                onClick={() => toggleFavorite("tip", tip.id)}
+                              >
+                                {fav ? "Saved" : "Save tip"}
+                              </Button>
+                            </Stack>
+                            <ul style={{ margin: 0, paddingLeft: 16 }}>
+                              {tip.bullets?.map((b) => (
+                                <li key={b}>
+                                  <Typography variant="body2" color="text.secondary">
+                                    {b}
+                                  </Typography>
+                                </li>
+                              ))}
+                            </ul>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
                   </Stack>
                 </Box>
               );
