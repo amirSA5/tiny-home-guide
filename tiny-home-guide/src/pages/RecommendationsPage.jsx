@@ -9,6 +9,7 @@ import {
   CardContent,
   CircularProgress,
   Divider,
+  Chip,
   Stack,
   Typography,
 } from "@mui/material";
@@ -29,6 +30,46 @@ function meetsHeight(minHeight, profileHeight) {
   if (!minHeight) return true;
   if (!profileHeight) return true;
   return Number(profileHeight) >= minHeight;
+}
+
+function computeLayoutScore(pattern, profile) {
+  const area = profile.length * profile.width;
+  const rec = pattern.recommendedFor || {};
+  const profileHeight = profile.height;
+  const profileMobility = profile.mobility;
+
+  let score = 0;
+
+  if (rec.zones && rec.zones.length > 0) {
+    const matched = rec.zones.filter((z) => profile.zones.includes(z)).length;
+    const coverage = matched / rec.zones.length;
+    score += Math.round(coverage * 40);
+  } else {
+    score += 10;
+  }
+
+  if (pattern.minArea) {
+    const diff = Math.abs(area - pattern.minArea);
+    const areaScore = Math.max(0, 20 - Math.min(diff, 20));
+    score += areaScore;
+  } else {
+    score += 10;
+  }
+
+  if (rec.type?.includes(profile.type)) score += 10;
+  if (rec.occupants?.includes(profile.occupants)) score += 10;
+  if (matchesMobility(rec.mobility, profileMobility)) score += 10;
+
+  if (meetsHeight(rec.minHeight, profileHeight)) score += 5;
+  if (!pattern.requiresLoft || profile.loft) score += 5;
+
+  return score;
+}
+
+function attachScores(patterns, profile) {
+  return patterns
+    .map((p) => ({ ...p, matchScore: computeLayoutScore(p, profile) }))
+    .sort((a, b) => b.matchScore - a.matchScore);
 }
 
 function filterLayouts(spaceProfile) {
@@ -136,7 +177,7 @@ function RecommendationsPage() {
       } catch (err) {
         if (!cancelled) {
           setRecommendations({
-            layouts: filterLayouts(spaceProfile),
+            layouts: attachScores(filterLayouts(spaceProfile), spaceProfile),
             furniture: filterFurniture(spaceProfile),
             designTips,
             arrangementIdeas: filterArrangements(spaceProfile),
@@ -247,17 +288,81 @@ function RecommendationsPage() {
           </Typography>
         ) : (
           <Stack spacing={2}>
-            {layouts.map((lp) => {
+            {layouts.map((lp, idx) => {
               const fav = isFavorite("layout", lp.id);
               return (
                 <Card key={lp.id} variant="outlined">
                   <CardContent>
-                    <Typography variant="subtitle1" fontWeight={600}>
-                      {lp.title}
-                    </Typography>
+                    <Stack
+                      direction={{ xs: "column", sm: "row" }}
+                      spacing={1}
+                      alignItems={{ xs: "flex-start", sm: "center" }}
+                      justifyContent="space-between"
+                    >
+                      <Typography variant="subtitle1" fontWeight={600}>
+                        {idx === 0 ? "⭐ Best match · " : ""}
+                        {lp.title}
+                      </Typography>
+                      {lp.matchScore !== undefined && (
+                        <Typography variant="body2" color="text.secondary">
+                          Match score: {lp.matchScore}/100
+                        </Typography>
+                      )}
+                    </Stack>
                     <Typography variant="body2" color="text.secondary" sx={{ my: 1 }}>
                       {lp.description}
                     </Typography>
+                    <Stack direction="row" flexWrap="wrap" gap={1} sx={{ mb: 1 }}>
+                      {lp.requiredFeatures?.map((feat) => (
+                        <Chip key={feat} label={feat} size="small" />
+                      ))}
+                      {lp.recommendedFor?.occupants?.length && (
+                        <Chip
+                          label={`Suitable: ${lp.recommendedFor.occupants.join(", ")}`}
+                          size="small"
+                          color="primary"
+                          variant="outlined"
+                        />
+                      )}
+                    </Stack>
+                    <Stack
+                      direction={{ xs: "column", sm: "row" }}
+                      spacing={2}
+                      sx={{ mb: 1 }}
+                    >
+                      {lp.pros?.length > 0 && (
+                        <Box flex={1}>
+                          <Typography variant="body2" fontWeight={700}>
+                            Pros
+                          </Typography>
+                          <ul style={{ margin: "4px 0 0 16px", padding: 0 }}>
+                            {lp.pros.map((p) => (
+                              <li key={p}>
+                                <Typography variant="body2" color="text.secondary">
+                                  {p}
+                                </Typography>
+                              </li>
+                            ))}
+                          </ul>
+                        </Box>
+                      )}
+                      {lp.cons?.length > 0 && (
+                        <Box flex={1}>
+                          <Typography variant="body2" fontWeight={700}>
+                            Cons
+                          </Typography>
+                          <ul style={{ margin: "4px 0 0 16px", padding: 0 }}>
+                            {lp.cons.map((c) => (
+                              <li key={c}>
+                                <Typography variant="body2" color="text.secondary">
+                                  {c}
+                                </Typography>
+                              </li>
+                            ))}
+                          </ul>
+                        </Box>
+                      )}
+                    </Stack>
                     <Button
                       size="small"
                       variant={fav ? "contained" : "outlined"}

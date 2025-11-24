@@ -9,9 +9,17 @@
         {
           "type": "furniture",
           "id": "wall-mounted-desk"
+        },
+        {
+          "type": "layout",
+          "id": "raised-platform-storage"
+        },
+        {
+          "type": "layout",
+          "id": "sofa-bed-fold-table"
         }
       ],
-      "updatedAt": "2025-11-24T12:31:16.404Z"
+      "updatedAt": "2025-11-24T12:40:05.107Z"
     }
   }
 }

@@ -15,6 +15,53 @@ function meetsHeight(minHeight, profileHeight) {
   return profileHeight >= minHeight;
 }
 
+function computeLayoutScore(pattern, profile) {
+  const area = profile.length * profile.width;
+  const rec = pattern.recommendedFor || {};
+  const profileHeight = profile.height;
+  const profileMobility = profile.mobility;
+
+  let score = 0;
+
+  // Zone coverage (max 40)
+  if (rec.zones && rec.zones.length > 0) {
+    const matched = rec.zones.filter((z) => profile.zones.includes(z)).length;
+    const coverage = matched / rec.zones.length;
+    score += Math.round(coverage * 40);
+  } else {
+    score += 10;
+  }
+
+  // Area closeness (max 20)
+  if (pattern.minArea) {
+    const diff = Math.abs(area - pattern.minArea);
+    const areaScore = Math.max(0, 20 - Math.min(diff, 20));
+    score += areaScore;
+  } else {
+    score += 10;
+  }
+
+  // Type / occupants / mobility (max 30)
+  if (rec.type?.includes(profile.type)) score += 10;
+  if (rec.occupants?.includes(profile.occupants)) score += 10;
+  if (matchesMobility(rec.mobility, profileMobility)) score += 10;
+
+  // Height / loft fit (max 10)
+  if (meetsHeight(rec.minHeight, profileHeight)) score += 5;
+  if (!pattern.requiresLoft || profile.loft) score += 5;
+
+  return score;
+}
+
+function attachScores(patterns, profile) {
+  return patterns
+    .map((p) => ({
+      ...p,
+      matchScore: computeLayoutScore(p, profile),
+    }))
+    .sort((a, b) => b.matchScore - a.matchScore);
+}
+
 function filterLayouts(profile) {
   const area = profile.length * profile.width;
   const profileHeight = profile.height;
@@ -83,7 +130,7 @@ function filterZoneArrangements(profile) {
 
 export function buildRecommendations(profile) {
   const area = profile.length * profile.width;
-  const layouts = filterLayouts(profile);
+  const layouts = attachScores(filterLayouts(profile), profile);
   const furniture = filterFurniture(profile);
   const arrangements = filterZoneArrangements(profile);
 
